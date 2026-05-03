@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nango Vibe Relay</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Nango Vibe Relay</p>
+          <h1>Turn a long note + emoji into a traced signal</h1>
+          <p class="lede">
+            Submit a payload, watch steps move from pending to success, and inspect what failed when keys or OAuth are missing.
+          </p>
+        </div>
+      </header>
+
+      <section class="panel">
+        <label class="label" for="message">Message (min 50 characters)</label>
+        <textarea id="message" rows="6" maxlength="8000"
+          placeholder="Write at least 50 characters describing your vibe…"></textarea>
+
+        <label class="label" for="emoji">Mood emoji</label>
+        <input id="emoji" type="text" maxlength="8" placeholder="e.g. 🌊" autocomplete="off" />
+
+        <div class="actions">
+          <button id="submit" type="button" class="primary">Relay vibe</button>
+          <button id="clear" type="button" class="ghost">Clear form</button>
+        </div>
+        <p id="banner" class="banner" aria-live="polite"></p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Step log</h2>
+          <p id="requestId" class="mono subtle"></p>
+        </div>
+        <div id="log" class="log"></div>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
