@@ -36,7 +36,7 @@ submitEl.addEventListener('click', async () => {
 
   submitEl.disabled = true;
   try {
-    const res = await fetch('/submit', {
+    const res = await fetch('submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, emoji }),
@@ -74,7 +74,7 @@ function startPolling(requestId) {
 }
 
 async function refreshOnce(requestId) {
-  const res = await fetch(`/logs/${encodeURIComponent(requestId)}`);
+  const res = await fetch(`logs/${encodeURIComponent(requestId)}`);
   if (!res.ok) return;
   const body = await res.json();
   if (!body || typeof body !== 'object' || !Array.isArray(body.steps)) return;

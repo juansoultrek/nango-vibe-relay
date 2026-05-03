@@ -1,0 +1,2 @@
+# If plain Apache serves this directory, avoid exposing file listings.
+Options -Indexes
