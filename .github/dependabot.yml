@@ -1,0 +1,8 @@
+# Keep GitHub Actions dependencies patched (public repo + deployed surface).
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

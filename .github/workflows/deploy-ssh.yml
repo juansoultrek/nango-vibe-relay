@@ -1,0 +1,67 @@
+# Remote host details and credentials live only in GitHub Secrets — nothing sensitive in this file.
+
+name: Deploy production (SSH)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-nango-vibe-relay
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install and build (no verbose audit output)
+        run: npm ci --no-audit --no-fund && npm run build
+
+      - name: Pack deploy bundle
+        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json
+
+      - name: Upload bundle via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
+          source: deploy-bundle.tar.gz
+          target: ${{ secrets.DEPLOY_REMOTE_APP_DIR }}
+          overwrite: true
+          debug: false
+
+      - name: Extract and install production dependencies on server
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          REMOTE_DIR: ${{ secrets.DEPLOY_REMOTE_APP_DIR }}
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
+          envs: REMOTE_DIR
+          script_stop: true
+          debug: false
+          script: |
+            set -euo pipefail
+            cd "${REMOTE_DIR}"
+            tar -xzf deploy-bundle.tar.gz
+            rm -f deploy-bundle.tar.gz
+            npm ci --omit=dev --no-audit --no-fund
+            exit 0
