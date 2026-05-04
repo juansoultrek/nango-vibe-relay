@@ -90,6 +90,16 @@ routes.post('/submit', (req, res) => {
   void runPipeline(logStore, requestId, body.message, body.emoji);
 });
 
+/** Sheets test: browser visits use GET — explain; only POST runs the append. */
+routes.get('/test/sheets', (_req, res) => {
+  res.status(405).setHeader('Allow', 'POST');
+  res.json({
+    error:
+      'Use POST, not GET. This endpoint appends one test row; the browser always sends GET when you paste the URL.',
+    curl: 'curl -sS -X POST "$THIS_URL" -H "Content-Type: application/json" -d "{}"',
+  });
+});
+
 /** Append one labelled test row via Nango → Sheets only (no OpenAI, no Slack). */
 routes.post('/test/sheets', async (_req, res) => {
   const timestampIso = new Date().toISOString();

@@ -23,7 +23,7 @@ curl -sS -X POST "http://localhost:8787/test/sheets" \
   -d '{}'
 ```
 
-Success returns JSON with `ok: true`; the sheet gets one row with emoji **`🧪`** and text **`[Sheets connectivity test]`** in the usual columns.
+Do **not** open `/test/sheets` in the browser (that sends **GET**). Use **`curl -X POST`** or another HTTP client with **POST**.
 
 With a path prefix (e.g. app under `/nango`), call `http://localhost:8787/nango/test/sheets` when the host forwards the full path, or `/test/sheets` when the proxy strips the prefix — same pattern as `/health`.
 
