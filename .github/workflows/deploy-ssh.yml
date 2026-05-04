@@ -31,9 +31,13 @@ jobs:
       - name: Install and build (no verbose audit output)
         run: npm ci --no-audit --no-fund && npm run build
 
+      # Fresh prod-only tree from Linux CI — avoids needing `npm` on cPanel SSH (often missing).
+      - name: Production node_modules for bundle
+        run: rm -rf node_modules && npm ci --omit=dev --no-audit --no-fund
+
       # Do NOT ship .htaccess: cPanel/LiteSpeed writes Passenger directives here; our repo file would overwrite them on extract and Node would stop handling /nango/*.
       - name: Pack deploy bundle
-        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json server.js
+        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json server.js node_modules
 
       - name: Upload bundle via SCP
         uses: appleboy/scp-action@v0.1.7
@@ -47,57 +51,22 @@ jobs:
           overwrite: true
           debug: false
 
-      - name: Extract and install production dependencies on server
+      - name: Extract on server (includes Linux-built node_modules)
         env:
           REMOTE_DIR: ${{ secrets.DEPLOY_REMOTE_APP_DIR }}
-          NPM_BIN_OVERRIDE: ${{ secrets.DEPLOY_NPM_BIN }}
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USERNAME }}
           key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEPLOY_SSH_PORT }}
-          envs: REMOTE_DIR,NPM_BIN_OVERRIDE
+          envs: REMOTE_DIR
           debug: false
           script: |
             set -euo pipefail
             cd "${REMOTE_DIR}"
-            HOME="${HOME:-$(getent passwd "$(id -un)" | cut -d: -f6)}"
-            export HOME
+            rm -rf node_modules
             tar -xzf deploy-bundle.tar.gz
             rm -f deploy-bundle.tar.gz
-            rm -rf node_modules
-            NPM_BIN=""
-            if [ -n "${NPM_BIN_OVERRIDE:-}" ] && [ -x "${NPM_BIN_OVERRIDE}" ]; then
-              NPM_BIN="${NPM_BIN_OVERRIDE}"
-            fi
-            # cPanel mirrors app dir under ~/nodevenv/public_html/<same-relative-path>/<major>/bin/npm
-            if [ -z "${NPM_BIN}" ] && [[ "${REMOTE_DIR}" == */public_html/* ]]; then
-              PARENT="${REMOTE_DIR%/public_html/*}"
-              REL="${REMOTE_DIR#*/public_html/}"
-              NODEENV_APP="${PARENT}/nodevenv/public_html/${REL}"
-              for cand in "${NODEENV_APP}/"*/bin/npm; do
-                if [ -x "${cand}" ]; then NPM_BIN="${cand}"; break; fi
-              done
-            fi
-            if [ -z "${NPM_BIN}" ]; then
-              NPM_BIN="$(find "${HOME}" -path '*/nodevenv/*' -type f -name npm 2>/dev/null | head -1)" || true
-              [ -n "${NPM_BIN}" ] && [ -x "${NPM_BIN}" ] || NPM_BIN=""
-            fi
-            if [ -z "${NPM_BIN}" ]; then
-              for v in 22 21 20 18 16; do
-                p="/opt/cpanel/ea-nodejs${v}/bin/npm"
-                if [ -x "${p}" ]; then NPM_BIN="${p}"; break; fi
-              done
-            fi
-            if [ -z "${NPM_BIN}" ] && [ -x "/opt/cloudlinux/alt-nodejs20/root/usr/bin/npm" ]; then
-              NPM_BIN="/opt/cloudlinux/alt-nodejs20/root/usr/bin/npm"
-            fi
-            if [ -z "${NPM_BIN}" ]; then
-              echo "Could not find npm. Set secret DEPLOY_NPM_BIN. On SSH: ls \"\$HOME/nodevenv/public_html/…/nango\"/*/bin/npm" >&2
-              exit 127
-            fi
-            echo "Using npm: ${NPM_BIN}"
-            "${NPM_BIN}" ci --omit=dev --no-audit --no-fund
             mkdir -p tmp
             touch tmp/restart.txt
