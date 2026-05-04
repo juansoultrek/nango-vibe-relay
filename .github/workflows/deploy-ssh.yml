@@ -64,6 +64,8 @@ jobs:
             cd "${REMOTE_DIR}"
             tar -xzf deploy-bundle.tar.gz
             rm -f deploy-bundle.tar.gz
+            # cPanel sometimes leaves a broken node_modules symlink; npm ci won't replace it.
+            rm -rf node_modules
             npm ci --omit=dev --no-audit --no-fund
             mkdir -p tmp
             touch tmp/restart.txt
