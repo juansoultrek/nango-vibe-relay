@@ -48,25 +48,44 @@ jobs:
           debug: false
 
       - name: Extract and install production dependencies on server
-        uses: appleboy/ssh-action@v1.2.2
         env:
           REMOTE_DIR: ${{ secrets.DEPLOY_REMOTE_APP_DIR }}
+          NPM_BIN_OVERRIDE: ${{ secrets.DEPLOY_NPM_BIN }}
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USERNAME }}
           key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEPLOY_SSH_PORT }}
-          envs: REMOTE_DIR
-          script_stop: true
+          envs: REMOTE_DIR,NPM_BIN_OVERRIDE
           debug: false
           script: |
             set -euo pipefail
             cd "${REMOTE_DIR}"
             tar -xzf deploy-bundle.tar.gz
             rm -f deploy-bundle.tar.gz
-            # cPanel sometimes leaves a broken node_modules symlink; npm ci won't replace it.
             rm -rf node_modules
-            npm ci --omit=dev --no-audit --no-fund
+            NPM_BIN=""
+            if [ -n "${NPM_BIN_OVERRIDE:-}" ] && [ -x "${NPM_BIN_OVERRIDE}" ]; then
+              NPM_BIN="${NPM_BIN_OVERRIDE}"
+            elif [ -n "${HOME:-}" ]; then
+              NPM_BIN="$(find "${HOME}" -path '*/nodevenv/*' -type f -name npm 2>/dev/null | head -1)" || true
+              [ -n "${NPM_BIN}" ] && [ -x "${NPM_BIN}" ] || NPM_BIN=""
+            fi
+            if [ -z "${NPM_BIN}" ]; then
+              for v in 22 21 20 18 16; do
+                p="/opt/cpanel/ea-nodejs${v}/bin/npm"
+                if [ -x "${p}" ]; then NPM_BIN="${p}"; break; fi
+              done
+            fi
+            if [ -z "${NPM_BIN}" ] && [ -x "/opt/cloudlinux/alt-nodejs20/root/usr/bin/npm" ]; then
+              NPM_BIN="/opt/cloudlinux/alt-nodejs20/root/usr/bin/npm"
+            fi
+            if [ -z "${NPM_BIN}" ]; then
+              echo "Could not find npm. Set GitHub secret DEPLOY_NPM_BIN to the full path (ask host or run: ls /opt/cpanel/ea-nodejs*/bin/npm)." >&2
+              exit 127
+            fi
+            echo "Using npm: ${NPM_BIN}"
+            "${NPM_BIN}" ci --omit=dev --no-audit --no-fund
             mkdir -p tmp
             touch tmp/restart.txt
-            exit 0

@@ -28,7 +28,9 @@ See [.env.example](.env.example).
 
 ## Deploy (GitHub Actions)
 
-Push to **`main`** runs [`.github/workflows/deploy-ssh.yml`](.github/workflows/deploy-ssh.yml): build here, SCP a tarball, then remote `npm ci --omit=dev`.
+Push to **`main`** runs [`.github/workflows/deploy-ssh.yml`](.github/workflows/deploy-ssh.yml): build here, SCP a tarball, then remote **`npm ci --omit=dev`**.
+
+Many cPanel SSH sessions **do not** put `npm` on `PATH` (Actions used to fail with `npm: command not found`). The workflow resolves **`npm`** in this order: optional secret **`DEPLOY_NPM_BIN`**, then `find ~/nodevenv/.../npm`, then **`/opt/cpanel/ea-nodejs*/bin/npm`**. If deploy still fails at `npm ci`, run **`ls /opt/cpanel/ea-nodejs*/bin/npm`** over SSH and store the matching **`…/npm`** path (Node 20 line) as **`DEPLOY_NPM_BIN`**.
 
 The bundle intentionally **does not** include `.htaccess`. When you create the Node app, the panel generates `.htaccess` in the application root with **Passenger** (or equivalent) rules. Extracting our minimal repo `.htaccess` over that file **breaks routing**: LiteSpeed serves static files (including the default Node hello-world snippet) instead of running `dist/server.js`, and routes like `/nango/health` return **404**. To disable directory listings only, add `Options -Indexes` manually to the panel-managed `.htaccess` if you want.
 
@@ -41,6 +43,7 @@ Configure **repository secrets** (Settings → Secrets and variables → Actions
 | `DEPLOY_SSH_USERNAME` | SSH user |
 | `DEPLOY_SSH_PRIVATE_KEY` | Private key PEM (including headers) |
 | `DEPLOY_REMOTE_APP_DIR` | Absolute path on the server to the app root (`package.json` + root **`server.js`** shim that loads `dist/server.js`) |
+| `DEPLOY_NPM_BIN` | *(Optional)* Full path to `npm` on the host if auto-discovery fails (e.g. `/opt/cpanel/ea-nodejs20/bin/npm`) |
 
 In **Setup Node.js App** / Passenger, set **Application startup file** to **`server.js`** (some panels ignore `dist/server.js`). After deploy, restart the app if it does not pick up `tmp/restart.txt` automatically.
 
