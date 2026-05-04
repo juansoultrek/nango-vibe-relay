@@ -91,13 +91,18 @@ routes.post('/submit', (req, res) => {
 
 routes.use(express.static(PUBLIC_DIR));
 
-app.use(MOUNT || '/', routes);
-
+/**
+ * Many hosts (Passenger / reverse proxy) forward only the path *after* the public URL,
+ * e.g. browser GET /nango/health → Node sees GET /health. Mount the same router at both
+ * MOUNT and / so both patterns work. When MOUNT is empty, a single root mount is enough.
+ */
 if (MOUNT) {
   app.get(MOUNT, (_req, res) => {
     res.redirect(308, `${MOUNT}/`);
   });
+  app.use(MOUNT, routes);
 }
+app.use('/', routes);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
