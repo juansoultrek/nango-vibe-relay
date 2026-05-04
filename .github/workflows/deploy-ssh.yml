@@ -62,13 +62,25 @@ jobs:
           script: |
             set -euo pipefail
             cd "${REMOTE_DIR}"
+            HOME="${HOME:-$(getent passwd "$(id -un)" | cut -d: -f6)}"
+            export HOME
             tar -xzf deploy-bundle.tar.gz
             rm -f deploy-bundle.tar.gz
             rm -rf node_modules
             NPM_BIN=""
             if [ -n "${NPM_BIN_OVERRIDE:-}" ] && [ -x "${NPM_BIN_OVERRIDE}" ]; then
               NPM_BIN="${NPM_BIN_OVERRIDE}"
-            elif [ -n "${HOME:-}" ]; then
+            fi
+            # cPanel mirrors app dir under ~/nodevenv/public_html/<same-relative-path>/<major>/bin/npm
+            if [ -z "${NPM_BIN}" ] && [[ "${REMOTE_DIR}" == */public_html/* ]]; then
+              PARENT="${REMOTE_DIR%/public_html/*}"
+              REL="${REMOTE_DIR#*/public_html/}"
+              NODEENV_APP="${PARENT}/nodevenv/public_html/${REL}"
+              for cand in "${NODEENV_APP}/"*/bin/npm; do
+                if [ -x "${cand}" ]; then NPM_BIN="${cand}"; break; fi
+              done
+            fi
+            if [ -z "${NPM_BIN}" ]; then
               NPM_BIN="$(find "${HOME}" -path '*/nodevenv/*' -type f -name npm 2>/dev/null | head -1)" || true
               [ -n "${NPM_BIN}" ] && [ -x "${NPM_BIN}" ] || NPM_BIN=""
             fi
@@ -82,7 +94,7 @@ jobs:
               NPM_BIN="/opt/cloudlinux/alt-nodejs20/root/usr/bin/npm"
             fi
             if [ -z "${NPM_BIN}" ]; then
-              echo "Could not find npm. Set GitHub secret DEPLOY_NPM_BIN to the full path (ask host or run: ls /opt/cpanel/ea-nodejs*/bin/npm)." >&2
+              echo "Could not find npm. Set secret DEPLOY_NPM_BIN. On SSH: ls \"\$HOME/nodevenv/public_html/…/nango\"/*/bin/npm" >&2
               exit 127
             fi
             echo "Using npm: ${NPM_BIN}"
