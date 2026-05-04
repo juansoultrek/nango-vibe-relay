@@ -95,11 +95,11 @@ routes.use(express.static(PUBLIC_DIR));
  * Many hosts (Passenger / reverse proxy) forward only the path *after* the public URL,
  * e.g. browser GET /nango/health → Node sees GET /health. Mount the same router at both
  * MOUNT and / so both patterns work. When MOUNT is empty, a single root mount is enough.
+ *
+ * Do NOT redirect GET /nango → /nango/: LiteSpeed often forwards /nango/ upstream as /nango,
+ * which would repeat the redirect forever (308 loop).
  */
 if (MOUNT) {
-  app.get(MOUNT, (_req, res) => {
-    res.redirect(308, `${MOUNT}/`);
-  });
   app.use(MOUNT, routes);
 }
 app.use('/', routes);
