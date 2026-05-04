@@ -8,7 +8,8 @@ export type LogStoreSnapshot = {
 
 /** In-memory logs keyed by request id (demo-oriented; restarting the server clears history). */
 
-const MIN_MESSAGE_LENGTH = 50;
+const MIN_MESSAGE_LENGTH = 10;
+const MAX_MESSAGE_LENGTH = 500;
 
 export class LogStore {
   private logs = new Map<string, LogStep[]>();
@@ -19,8 +20,26 @@ export class LogStore {
     if (trimmed.length < MIN_MESSAGE_LENGTH) {
       return {
         ok: false,
-        error: `message must be at least ${MIN_MESSAGE_LENGTH} characters (${trimmed.length} provided)`,
+        error: `Message must be at least ${MIN_MESSAGE_LENGTH} characters (${trimmed.length} given).`,
       };
+    }
+    if (trimmed.length > MAX_MESSAGE_LENGTH) {
+      return {
+        ok: false,
+        error: `Message must be at most ${MAX_MESSAGE_LENGTH} characters (${trimmed.length} given).`,
+      };
+    }
+    return { ok: true };
+  }
+
+  validateEmoji(emoji: string): { ok: true } | { ok: false; error: string } {
+    const trimmed = emoji.trim();
+    if (!trimmed) {
+      return { ok: false, error: 'Choose a mood emoji (tap a face).' };
+    }
+    const glyphs = [...trimmed];
+    if (glyphs.length > 8) {
+      return { ok: false, error: 'Pick a single face emoji.' };
     }
     return { ok: true };
   }

@@ -3,32 +3,77 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Nango Vibe Relay</title>
+    <title>Nango demo · JuanSoulTrek</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="page">
+      <div class="top-bar">
+        <a class="button secondary" href="https://juansoultrek.com/">← Home</a>
+      </div>
+
       <header class="hero">
-        <div>
-          <p class="eyebrow">Nango Vibe Relay</p>
-          <h1>Turn a long note + emoji into a traced signal</h1>
-          <p class="lede">
-            Submit a payload, watch steps move from pending to success, and inspect what failed when keys or OAuth are missing.
-          </p>
-        </div>
+        <span class="tag">Nango demo</span>
+        <h1>Integration debugger</h1>
+        <p class="lede">
+          Short phrase plus a face emoji — watch each step run (AI, Sheets, Slack) or see exactly what
+          broke.
+        </p>
       </header>
 
       <section class="panel">
-        <label class="label" for="message">Message (min 50 characters)</label>
-        <textarea id="message" rows="6" maxlength="8000"
-          placeholder="Write at least 50 characters describing your vibe…"></textarea>
+        <label class="label" for="message">Your message</label>
+        <textarea
+          id="message"
+          rows="5"
+          maxlength="500"
+          placeholder="A short phrase or sentence about how you're feeling right now…"
+        ></textarea>
+        <p id="char-count" class="char-count" aria-live="polite">0 / 500</p>
 
-        <label class="label" for="emoji">Mood emoji</label>
-        <input id="emoji" type="text" maxlength="8" placeholder="e.g. 🌊" autocomplete="off" />
+        <label class="label" id="emoji-label">What is your emoji mood right now?</label>
+        <p class="hint">Tap a face to choose.</p>
+        <div class="emoji-row">
+          <span id="emoji-preview" class="emoji-preview" aria-hidden="true">·</span>
+          <input type="hidden" id="emoji" name="emoji" value="" autocomplete="off" />
+        </div>
+        <div class="emoji-grid" role="group" aria-labelledby="emoji-label">
+          <button type="button" class="emoji-choice" data-emoji="😀" aria-label="grinning">😀</button>
+          <button type="button" class="emoji-choice" data-emoji="😃" aria-label="smiley">😃</button>
+          <button type="button" class="emoji-choice" data-emoji="😄" aria-label="smile">😄</button>
+          <button type="button" class="emoji-choice" data-emoji="😁" aria-label="beaming">😁</button>
+          <button type="button" class="emoji-choice" data-emoji="😊" aria-label="blush">😊</button>
+          <button type="button" class="emoji-choice" data-emoji="🙂" aria-label="slight smile">🙂</button>
+          <button type="button" class="emoji-choice" data-emoji="😉" aria-label="wink">😉</button>
+          <button type="button" class="emoji-choice" data-emoji="😍" aria-label="heart eyes">😍</button>
+          <button type="button" class="emoji-choice" data-emoji="🤩" aria-label="star-struck">🤩</button>
+          <button type="button" class="emoji-choice" data-emoji="😘" aria-label="kiss">😘</button>
+          <button type="button" class="emoji-choice" data-emoji="😎" aria-label="cool">😎</button>
+          <button type="button" class="emoji-choice" data-emoji="🤓" aria-label="nerd">🤓</button>
+          <button type="button" class="emoji-choice" data-emoji="🧐" aria-label="monocle">🧐</button>
+          <button type="button" class="emoji-choice" data-emoji="🤔" aria-label="thinking">🤔</button>
+          <button type="button" class="emoji-choice" data-emoji="😴" aria-label="sleeping">😴</button>
+          <button type="button" class="emoji-choice" data-emoji="😮" aria-label="surprised">😮</button>
+          <button type="button" class="emoji-choice" data-emoji="😅" aria-label="sweat smile">😅</button>
+          <button type="button" class="emoji-choice" data-emoji="😢" aria-label="cry">😢</button>
+          <button type="button" class="emoji-choice" data-emoji="😭" aria-label="sob">😭</button>
+          <button type="button" class="emoji-choice" data-emoji="😤" aria-label="steam">😤</button>
+          <button type="button" class="emoji-choice" data-emoji="😡" aria-label="rage">😡</button>
+          <button type="button" class="emoji-choice" data-emoji="🥳" aria-label="party">🥳</button>
+          <button type="button" class="emoji-choice" data-emoji="🙃" aria-label="upside-down">🙃</button>
+          <button type="button" class="emoji-choice" data-emoji="😇" aria-label="halo">😇</button>
+          <button type="button" class="emoji-choice" data-emoji="🥺" aria-label="pleading">🥺</button>
+        </div>
 
         <div class="actions">
-          <button id="submit" type="button" class="primary">Relay vibe</button>
-          <button id="clear" type="button" class="ghost">Clear form</button>
+          <button id="submit" type="button" class="button primary">Relay vibe</button>
+          <button id="clear" type="button" class="button ghost">Clear</button>
         </div>
         <p id="banner" class="banner" aria-live="polite"></p>
       </section>

@@ -1,5 +1,10 @@
+const MESSAGE_MIN = 10;
+const MESSAGE_MAX = 500;
+
 const messageEl = document.getElementById('message');
 const emojiEl = document.getElementById('emoji');
+const emojiPreviewEl = document.getElementById('emoji-preview');
+const charCountEl = document.getElementById('char-count');
 const submitEl = document.getElementById('submit');
 const clearEl = document.getElementById('clear');
 const bannerEl = document.getElementById('banner');
@@ -8,6 +13,8 @@ const requestIdEl = document.getElementById('requestId');
 
 if (!(messageEl instanceof HTMLTextAreaElement)) throw new Error('#message missing');
 if (!(emojiEl instanceof HTMLInputElement)) throw new Error('#emoji missing');
+if (!(emojiPreviewEl instanceof HTMLSpanElement)) throw new Error('#emoji-preview missing');
+if (!(charCountEl instanceof HTMLParagraphElement)) throw new Error('#char-count missing');
 if (!(submitEl instanceof HTMLButtonElement)) throw new Error('#submit missing');
 if (!(clearEl instanceof HTMLButtonElement)) throw new Error('#clear missing');
 if (!(bannerEl instanceof HTMLParagraphElement)) throw new Error('#banner missing');
@@ -16,9 +23,37 @@ if (!(requestIdEl instanceof HTMLParagraphElement)) throw new Error('#requestId 
 
 let pollTimer = null;
 
+function syncCharCount() {
+  const n = messageEl.value.length;
+  charCountEl.textContent = `${n} / ${MESSAGE_MAX}`;
+}
+
+function setEmojiChoice(emoji) {
+  emojiEl.value = emoji;
+  emojiPreviewEl.textContent = emoji || '·';
+  emojiPreviewEl.classList.toggle('has-choice', Boolean(emoji));
+
+  document.querySelectorAll('.emoji-choice').forEach((btn) => {
+    if (!(btn instanceof HTMLButtonElement)) return;
+    btn.classList.toggle('is-selected', btn.dataset.emoji === emoji);
+  });
+}
+
+document.querySelectorAll('.emoji-choice').forEach((btn) => {
+  if (!(btn instanceof HTMLButtonElement)) return;
+  btn.addEventListener('click', () => {
+    const ch = btn.dataset.emoji ?? '';
+    setEmojiChoice(ch);
+  });
+});
+
+messageEl.addEventListener('input', syncCharCount);
+syncCharCount();
+
 clearEl.addEventListener('click', () => {
   messageEl.value = '';
-  emojiEl.value = '';
+  syncCharCount();
+  setEmojiChoice('');
   bannerEl.textContent = '';
   bannerEl.classList.remove('error');
   requestIdEl.textContent = '';
@@ -31,8 +66,24 @@ submitEl.addEventListener('click', async () => {
   requestIdEl.textContent = '';
   logEl.innerHTML = '';
 
-  const message = messageEl.value;
-  const emoji = emojiEl.value;
+  const message = messageEl.value.trim();
+  const emoji = emojiEl.value.trim();
+
+  const len = message.length;
+  if (len < MESSAGE_MIN || len > MESSAGE_MAX) {
+    bannerEl.classList.add('error');
+    bannerEl.textContent =
+      len < MESSAGE_MIN
+        ? `Message needs at least ${MESSAGE_MIN} characters (${len} now).`
+        : `Message must be at most ${MESSAGE_MAX} characters (${len} now).`;
+    return;
+  }
+
+  if (!emoji) {
+    bannerEl.classList.add('error');
+    bannerEl.textContent = 'Choose a mood emoji (tap a face).';
+    return;
+  }
 
   submitEl.disabled = true;
   try {

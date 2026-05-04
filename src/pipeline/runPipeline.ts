@@ -25,6 +25,16 @@ export async function runPipeline(
       return;
     }
 
+    const emojiValidation = logStore.validateEmoji(emoji);
+    if (!emojiValidation.ok) {
+      logStore.mergeStep(requestId, 'validate_input', {
+        status: 'error',
+        message: emojiValidation.error,
+      });
+      logStore.markFinished(requestId);
+      return;
+    }
+
     logStore.mergeStep(requestId, 'validate_input', { status: 'success', message: 'Payload looks good' });
 
     logStore.mergeStep(requestId, 'openai_process', { status: 'running', message: 'Calling OpenAI' });
