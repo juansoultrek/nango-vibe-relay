@@ -54,7 +54,7 @@ jobs:
       - name: Extract on server (includes Linux-built node_modules)
         env:
           REMOTE_DIR: ${{ secrets.DEPLOY_REMOTE_APP_DIR }}
-        uses: appleboy/ssh-action@v1.2.2
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USERNAME }}
