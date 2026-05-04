@@ -18,22 +18,33 @@
         <a class="button secondary" href="https://juansoultrek.com/">← Home</a>
       </div>
 
-      <section>
+      <section class="page-section">
         <div class="section-heading">
           <p class="eyebrow">Project dashboards</p>
           <h2>Nango integration debugger.</h2>
           <p class="intro">
-            Same layout tokens as juansoultrek.com — mood emoji, short message, then a live trace through
-            validation, OpenAI, Sheets, and Slack.
+            <strong>What happens:</strong> Submit triggers validation, then OpenAI reads your message plus emoji
+            and returns a cleaned line and interpreted mood. With env vars set, Nango proxies Google Sheets (append
+            row) and Slack (channel post). The step log records each phase so OAuth or API failures show up next to
+            the step that broke.
+          </p>
+          <p class="intro intro-follow">
+            <strong>Message:</strong> Write in plain language, between <strong>10 and 500 characters</strong>. One or
+            two sentences about how you feel or what is on your mind is ideal — concrete beats vague filler.
+          </p>
+          <p class="intro intro-follow">
+            <strong>Mood emoji — required:</strong> Pick exactly one face before you submit (no emoji means the relay
+            stops at validation). The emoji gives the model an explicit tone anchor so interpreted mood and downstream
+            summaries track how you signaled you felt, not only the words.
           </p>
         </div>
 
         <section class="grid nango-layout" aria-label="Nango demo">
           <article class="card nango">
-            <div>
+            <div class="relay-body">
               <div class="tag">Nango</div>
               <h3>Relay payload</h3>
-              <p>Pick a face, write up to 500 characters, submit — errors surface per step.</p>
+              <p>Required emoji + short message. Submit when both are ready.</p>
               <ul class="stack">
                 <li>Node.js</li>
                 <li>Express</li>
@@ -44,17 +55,19 @@
               <textarea
                 id="message"
                 class="nango-input"
-                rows="5"
+                rows="3"
                 maxlength="500"
                 placeholder="How are you feeling right now?"
               ></textarea>
               <p id="char-count" class="char-count" aria-live="polite">0 / 500</p>
 
-              <label class="field-label" id="emoji-label">What is your emoji mood right now?</label>
-              <p class="field-hint">Hover for glow — click to choose.</p>
+              <label class="field-label" id="emoji-label">Mood emoji <span class="req">(required)</span></label>
+              <p class="field-hint">
+                Hover a tile for glow, click one face — Relay vibe stays disabled until an emoji is chosen.
+              </p>
               <div class="emoji-row">
                 <span id="emoji-preview" class="emoji-preview" aria-hidden="true">·</span>
-                <input type="hidden" id="emoji" name="emoji" value="" autocomplete="off" />
+                <input type="hidden" id="emoji" name="emoji" value="" autocomplete="off" aria-required="true" />
               </div>
               <div class="emoji-grid" role="group" aria-labelledby="emoji-label">
                 <button type="button" class="emoji-choice" data-emoji="😀" aria-label="grinning">😀</button>
@@ -85,14 +98,14 @@
               </div>
             </div>
             <div class="actions">
-              <button id="submit" type="button" class="button primary">Relay vibe</button>
+              <button id="submit" type="button" class="button primary" disabled>Relay vibe</button>
               <button id="clear" type="button" class="button secondary">Clear</button>
             </div>
             <p id="banner" class="banner" aria-live="polite"></p>
           </article>
 
-          <article class="card nango">
-            <div>
+          <article class="card nango card--trace">
+            <div class="trace-body">
               <div class="tag">Live trace</div>
               <h3>Step log</h3>
               <p class="mono subtle request-line" id="requestId"></p>
@@ -100,8 +113,6 @@
             </div>
           </article>
         </section>
-
-        <p class="note">Deployed under <code>/nango/</code> — env vars mirror <code>.env.example</code>.</p>
       </section>
     </main>
 

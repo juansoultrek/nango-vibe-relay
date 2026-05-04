@@ -22,10 +22,22 @@ if (!(logEl instanceof HTMLDivElement)) throw new Error('#log missing');
 if (!(requestIdEl instanceof HTMLParagraphElement)) throw new Error('#requestId missing');
 
 let pollTimer = null;
+let submitting = false;
 
 function syncCharCount() {
   const n = messageEl.value.length;
   charCountEl.textContent = `${n} / ${MESSAGE_MAX}`;
+}
+
+function syncSubmitEnabled() {
+  if (submitting) {
+    submitEl.disabled = true;
+    return;
+  }
+  const len = messageEl.value.trim().length;
+  const okLen = len >= MESSAGE_MIN && len <= MESSAGE_MAX;
+  const okEmoji = Boolean(emojiEl.value.trim());
+  submitEl.disabled = !(okLen && okEmoji);
 }
 
 function setEmojiChoice(emoji) {
@@ -37,6 +49,7 @@ function setEmojiChoice(emoji) {
     if (!(btn instanceof HTMLButtonElement)) return;
     btn.classList.toggle('is-selected', btn.dataset.emoji === emoji);
   });
+  syncSubmitEnabled();
 }
 
 document.querySelectorAll('.emoji-choice').forEach((btn) => {
@@ -47,8 +60,12 @@ document.querySelectorAll('.emoji-choice').forEach((btn) => {
   });
 });
 
-messageEl.addEventListener('input', syncCharCount);
+messageEl.addEventListener('input', () => {
+  syncCharCount();
+  syncSubmitEnabled();
+});
 syncCharCount();
+syncSubmitEnabled();
 
 clearEl.addEventListener('click', () => {
   messageEl.value = '';
@@ -85,6 +102,7 @@ submitEl.addEventListener('click', async () => {
     return;
   }
 
+  submitting = true;
   submitEl.disabled = true;
   try {
     const res = await fetch('submit', {
@@ -111,7 +129,8 @@ submitEl.addEventListener('click', async () => {
     bannerEl.classList.add('error');
     bannerEl.textContent = err instanceof Error ? err.message : String(err);
   } finally {
-    submitEl.disabled = false;
+    submitting = false;
+    syncSubmitEnabled();
   }
 });
 
