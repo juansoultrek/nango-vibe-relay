@@ -32,7 +32,7 @@ jobs:
         run: npm ci --no-audit --no-fund && npm run build
 
       - name: Pack deploy bundle
-        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json .htaccess
+        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json server.js .htaccess
 
       - name: Upload bundle via SCP
         uses: appleboy/scp-action@v0.1.7
@@ -64,4 +64,6 @@ jobs:
             tar -xzf deploy-bundle.tar.gz
             rm -f deploy-bundle.tar.gz
             npm ci --omit=dev --no-audit --no-fund
+            mkdir -p tmp
+            touch tmp/restart.txt
             exit 0

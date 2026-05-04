@@ -38,7 +38,9 @@ Configure **repository secrets** (Settings → Secrets and variables → Actions
 | `DEPLOY_SSH_PORT` | SSH port |
 | `DEPLOY_SSH_USERNAME` | SSH user |
 | `DEPLOY_SSH_PRIVATE_KEY` | Private key PEM (including headers) |
-| `DEPLOY_REMOTE_APP_DIR` | Absolute path on the server to the app root (`package.json` + `dist/server.js`) |
+| `DEPLOY_REMOTE_APP_DIR` | Absolute path on the server to the app root (`package.json` + root **`server.js`** shim that loads `dist/server.js`) |
+
+In **Setup Node.js App** / Passenger, set **Application startup file** to **`server.js`** (some panels ignore `dist/server.js`). After deploy, restart the app if it does not pick up `tmp/restart.txt` automatically.
 
 Application secrets (`OPENAI_API_KEY`, etc.) stay on your host’s runtime env, not necessarily in GitHub unless you explicitly want them here.
 
