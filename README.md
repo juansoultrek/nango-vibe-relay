@@ -30,6 +30,8 @@ See [.env.example](.env.example).
 
 Push to **`main`** runs [`.github/workflows/deploy-ssh.yml`](.github/workflows/deploy-ssh.yml): build here, SCP a tarball, then remote `npm ci --omit=dev`.
 
+The bundle intentionally **does not** include `.htaccess`. When you create the Node app, the panel generates `.htaccess` in the application root with **Passenger** (or equivalent) rules. Extracting our minimal repo `.htaccess` over that file **breaks routing**: LiteSpeed serves static files (including the default Node hello-world snippet) instead of running `dist/server.js`, and routes like `/nango/health` return **404**. To disable directory listings only, add `Options -Indexes` manually to the panel-managed `.htaccess` if you want.
+
 Configure **repository secrets** (Settings → Secrets and variables → Actions):
 
 | Secret | Purpose |

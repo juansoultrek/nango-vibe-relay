@@ -1,2 +1,3 @@
+# Local / manual only — NOT shipped by GitHub Actions (would overwrite cPanel Passenger .htaccess).
 # If plain Apache serves this directory, avoid exposing file listings.
 Options -Indexes

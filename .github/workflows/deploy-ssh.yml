@@ -31,8 +31,9 @@ jobs:
       - name: Install and build (no verbose audit output)
         run: npm ci --no-audit --no-fund && npm run build
 
+      # Do NOT ship .htaccess: cPanel/LiteSpeed writes Passenger directives here; our repo file would overwrite them on extract and Node would stop handling /nango/*.
       - name: Pack deploy bundle
-        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json server.js .htaccess
+        run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json server.js
 
       - name: Upload bundle via SCP
         uses: appleboy/scp-action@v0.1.7
