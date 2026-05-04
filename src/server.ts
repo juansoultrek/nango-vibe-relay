@@ -4,6 +4,7 @@ import express from 'express';
 
 import { LogStore } from './logging/logStore';
 import { runPipeline } from './pipeline/runPipeline';
+import { appendRowToSheet } from './services/googleSheetsService';
 import type { SubmitBody } from './types';
 
 const logStore = new LogStore();
@@ -87,6 +88,47 @@ routes.post('/submit', (req, res) => {
   res.status(202).json({ requestId });
 
   void runPipeline(logStore, requestId, body.message, body.emoji);
+});
+
+/** Append one labelled test row via Nango → Sheets only (no OpenAI, no Slack). */
+routes.post('/test/sheets', async (req, res) => {
+  const secret = process.env.SHEETS_TEST_SECRET?.trim();
+  if (!secret) {
+    res.status(503).json({
+      error:
+        'Disabled. Set SHEETS_TEST_SECRET in the environment, then send the same value in the X-Sheets-Test-Secret header.',
+    });
+    return;
+  }
+
+  const header = req.get('x-sheets-test-secret');
+  if (header !== secret) {
+    res.status(401).json({ error: 'Invalid or missing X-Sheets-Test-Secret header' });
+    return;
+  }
+
+  const timestampIso = new Date().toISOString();
+  try {
+    const result = await appendRowToSheet({
+      timestampIso,
+      emoji: '🧪',
+      originalMessage: '[Sheets connectivity test]',
+      cleanedMessage: '[Sheets connectivity test]',
+      interpretedMood: 'test',
+    });
+
+    if (result.ok) {
+      res.json({
+        ok: true,
+        message: 'Test row appended. Check the spreadsheet for 🧪 and the test markers.',
+      });
+      return;
+    }
+    res.status(502).json({ ok: false, detail: result.detail });
+  } catch (err: unknown) {
+    const detail = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ ok: false, detail });
+  }
 });
 
 routes.use(express.static(PUBLIC_DIR));
