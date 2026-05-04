@@ -14,98 +14,95 @@
   </head>
   <body class="dark-mode">
     <main>
-      <div class="demo-nav">
+      <div class="demo-nav-row">
         <a class="button secondary" href="https://juansoultrek.com/">← Home</a>
       </div>
 
-      <header class="section-heading">
-        <p class="eyebrow">Project dashboards</p>
-        <h2>Nango integration debugger.</h2>
-        <p class="intro">
-          Pick a face for your mood, add a short note (up to 500 characters), then watch each step:
-          validation, OpenAI, Google Sheets, and Slack — or see exactly where OAuth or API keys failed.
-        </p>
-      </header>
+      <section>
+        <div class="section-heading">
+          <p class="eyebrow">Project dashboards</p>
+          <h2>Nango integration debugger.</h2>
+          <p class="intro">
+            Same layout tokens as juansoultrek.com — mood emoji, short message, then a live trace through
+            validation, OpenAI, Sheets, and Slack.
+          </p>
+        </div>
 
-      <section class="demo-grid" aria-label="Nango demo">
-        <article class="card nango">
-          <div class="card-body">
-            <div class="tag">Nango</div>
-            <h3>Relay payload</h3>
-            <p>
-              Same visual language as the JuanSoulTrek home — glass cards, violet accent, orange and mint
-              glow in the page backdrop.
-            </p>
-            <ul class="stack">
-              <li>Node.js</li>
-              <li>Express</li>
-              <li>Nango</li>
-            </ul>
+        <section class="grid nango-layout" aria-label="Nango demo">
+          <article class="card nango">
+            <div>
+              <div class="tag">Nango</div>
+              <h3>Relay payload</h3>
+              <p>Pick a face, write up to 500 characters, submit — errors surface per step.</p>
+              <ul class="stack">
+                <li>Node.js</li>
+                <li>Express</li>
+                <li>Nango</li>
+              </ul>
 
-            <label class="field-label" for="message">Your message</label>
-            <textarea
-              id="message"
-              rows="5"
-              maxlength="500"
-              placeholder="How are you feeling in one short phrase or paragraph?"
-            ></textarea>
-            <p id="char-count" class="char-count" aria-live="polite">0 / 500</p>
+              <label class="field-label" for="message">Your message</label>
+              <textarea
+                id="message"
+                class="nango-input"
+                rows="5"
+                maxlength="500"
+                placeholder="How are you feeling right now?"
+              ></textarea>
+              <p id="char-count" class="char-count" aria-live="polite">0 / 500</p>
 
-            <label class="field-label" id="emoji-label">What is your emoji mood right now?</label>
-            <p class="field-hint">Hover faces for a glow; click to select.</p>
-            <div class="emoji-row">
-              <span id="emoji-preview" class="emoji-preview" aria-hidden="true">·</span>
-              <input type="hidden" id="emoji" name="emoji" value="" autocomplete="off" />
+              <label class="field-label" id="emoji-label">What is your emoji mood right now?</label>
+              <p class="field-hint">Hover for glow — click to choose.</p>
+              <div class="emoji-row">
+                <span id="emoji-preview" class="emoji-preview" aria-hidden="true">·</span>
+                <input type="hidden" id="emoji" name="emoji" value="" autocomplete="off" />
+              </div>
+              <div class="emoji-grid" role="group" aria-labelledby="emoji-label">
+                <button type="button" class="emoji-choice" data-emoji="😀" aria-label="grinning">😀</button>
+                <button type="button" class="emoji-choice" data-emoji="😃" aria-label="smiley">😃</button>
+                <button type="button" class="emoji-choice" data-emoji="😄" aria-label="smile">😄</button>
+                <button type="button" class="emoji-choice" data-emoji="😁" aria-label="beaming">😁</button>
+                <button type="button" class="emoji-choice" data-emoji="😊" aria-label="blush">😊</button>
+                <button type="button" class="emoji-choice" data-emoji="🙂" aria-label="slight smile">🙂</button>
+                <button type="button" class="emoji-choice" data-emoji="😉" aria-label="wink">😉</button>
+                <button type="button" class="emoji-choice" data-emoji="😍" aria-label="heart eyes">😍</button>
+                <button type="button" class="emoji-choice" data-emoji="🤩" aria-label="star-struck">🤩</button>
+                <button type="button" class="emoji-choice" data-emoji="😘" aria-label="kiss">😘</button>
+                <button type="button" class="emoji-choice" data-emoji="😎" aria-label="cool">😎</button>
+                <button type="button" class="emoji-choice" data-emoji="🤓" aria-label="nerd">🤓</button>
+                <button type="button" class="emoji-choice" data-emoji="🧐" aria-label="monocle">🧐</button>
+                <button type="button" class="emoji-choice" data-emoji="🤔" aria-label="thinking">🤔</button>
+                <button type="button" class="emoji-choice" data-emoji="😴" aria-label="sleeping">😴</button>
+                <button type="button" class="emoji-choice" data-emoji="😮" aria-label="surprised">😮</button>
+                <button type="button" class="emoji-choice" data-emoji="😅" aria-label="sweat smile">😅</button>
+                <button type="button" class="emoji-choice" data-emoji="😢" aria-label="cry">😢</button>
+                <button type="button" class="emoji-choice" data-emoji="😭" aria-label="sob">😭</button>
+                <button type="button" class="emoji-choice" data-emoji="😤" aria-label="steam">😤</button>
+                <button type="button" class="emoji-choice" data-emoji="😡" aria-label="rage">😡</button>
+                <button type="button" class="emoji-choice" data-emoji="🥳" aria-label="party">🥳</button>
+                <button type="button" class="emoji-choice" data-emoji="🙃" aria-label="upside-down">🙃</button>
+                <button type="button" class="emoji-choice" data-emoji="😇" aria-label="halo">😇</button>
+                <button type="button" class="emoji-choice" data-emoji="🥺" aria-label="pleading">🥺</button>
+              </div>
             </div>
-            <div class="emoji-grid" role="group" aria-labelledby="emoji-label">
-              <button type="button" class="emoji-choice" data-emoji="😀" aria-label="grinning">😀</button>
-              <button type="button" class="emoji-choice" data-emoji="😃" aria-label="smiley">😃</button>
-              <button type="button" class="emoji-choice" data-emoji="😄" aria-label="smile">😄</button>
-              <button type="button" class="emoji-choice" data-emoji="😁" aria-label="beaming">😁</button>
-              <button type="button" class="emoji-choice" data-emoji="😊" aria-label="blush">😊</button>
-              <button type="button" class="emoji-choice" data-emoji="🙂" aria-label="slight smile">🙂</button>
-              <button type="button" class="emoji-choice" data-emoji="😉" aria-label="wink">😉</button>
-              <button type="button" class="emoji-choice" data-emoji="😍" aria-label="heart eyes">😍</button>
-              <button type="button" class="emoji-choice" data-emoji="🤩" aria-label="star-struck">🤩</button>
-              <button type="button" class="emoji-choice" data-emoji="😘" aria-label="kiss">😘</button>
-              <button type="button" class="emoji-choice" data-emoji="😎" aria-label="cool">😎</button>
-              <button type="button" class="emoji-choice" data-emoji="🤓" aria-label="nerd">🤓</button>
-              <button type="button" class="emoji-choice" data-emoji="🧐" aria-label="monocle">🧐</button>
-              <button type="button" class="emoji-choice" data-emoji="🤔" aria-label="thinking">🤔</button>
-              <button type="button" class="emoji-choice" data-emoji="😴" aria-label="sleeping">😴</button>
-              <button type="button" class="emoji-choice" data-emoji="😮" aria-label="surprised">😮</button>
-              <button type="button" class="emoji-choice" data-emoji="😅" aria-label="sweat smile">😅</button>
-              <button type="button" class="emoji-choice" data-emoji="😢" aria-label="cry">😢</button>
-              <button type="button" class="emoji-choice" data-emoji="😭" aria-label="sob">😭</button>
-              <button type="button" class="emoji-choice" data-emoji="😤" aria-label="steam">😤</button>
-              <button type="button" class="emoji-choice" data-emoji="😡" aria-label="rage">😡</button>
-              <button type="button" class="emoji-choice" data-emoji="🥳" aria-label="party">🥳</button>
-              <button type="button" class="emoji-choice" data-emoji="🙃" aria-label="upside-down">🙃</button>
-              <button type="button" class="emoji-choice" data-emoji="😇" aria-label="halo">😇</button>
-              <button type="button" class="emoji-choice" data-emoji="🥺" aria-label="pleading">🥺</button>
+            <div class="actions">
+              <button id="submit" type="button" class="button primary">Relay vibe</button>
+              <button id="clear" type="button" class="button secondary">Clear</button>
             </div>
-          </div>
-          <div class="actions">
-            <button id="submit" type="button" class="button primary">Relay vibe</button>
-            <button id="clear" type="button" class="button secondary">Clear</button>
-          </div>
-          <p id="banner" class="banner" aria-live="polite"></p>
-        </article>
+            <p id="banner" class="banner" aria-live="polite"></p>
+          </article>
 
-        <article class="card nango">
-          <div class="card-body card-body--grow">
-            <div class="tag">Live trace</div>
-            <h3>Step log</h3>
-            <p class="mono subtle request-line" id="requestId"></p>
-            <div id="log" class="log"></div>
-          </div>
-        </article>
+          <article class="card nango">
+            <div>
+              <div class="tag">Live trace</div>
+              <h3>Step log</h3>
+              <p class="mono subtle request-line" id="requestId"></p>
+              <div id="log" class="log"></div>
+            </div>
+          </article>
+        </section>
+
+        <p class="note">Deployed under <code>/nango/</code> — env vars mirror <code>.env.example</code>.</p>
       </section>
-
-      <p class="note">
-        Tip: configure Nango + env vars on the server — see README on GitHub for connection IDs and Sheets
-        range.
-      </p>
     </main>
 
     <script src="app.js" defer></script>
