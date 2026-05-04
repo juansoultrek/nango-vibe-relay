@@ -15,16 +15,15 @@ Then open `http://localhost:8787` (unless `PORT` is set).
 
 ### Test Google Sheets only (no AI, no Slack)
 
-Set **`SHEETS_TEST_SECRET`** in `.env` (any random string). Ensure **`NANGO_*`** and **`GOOGLE_SPREADSHEET_ID`** / **`GOOGLE_SHEETS_RANGE`** are set like for a normal submit.
+Ensure **`NANGO_*`** and **`GOOGLE_SPREADSHEET_ID`** / **`GOOGLE_SHEETS_RANGE`** are set like for a normal submit.
 
 ```bash
 curl -sS -X POST "http://localhost:8787/test/sheets" \
   -H "Content-Type: application/json" \
-  -H "X-Sheets-Test-Secret: YOUR_SECRET_HERE" \
   -d '{}'
 ```
 
-Success returns JSON with `ok: true`; the sheet gets one row with emoji **`🧪`** and text **`[Sheets connectivity test]`** in the usual columns. If **`SHEETS_TEST_SECRET`** is unset, the route responds **503** so the endpoint stays off until you opt in.
+Success returns JSON with `ok: true`; the sheet gets one row with emoji **`🧪`** and text **`[Sheets connectivity test]`** in the usual columns.
 
 With a path prefix (e.g. app under `/nango`), call `http://localhost:8787/nango/test/sheets` when the host forwards the full path, or `/test/sheets` when the proxy strips the prefix — same pattern as `/health`.
 

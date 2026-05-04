@@ -91,22 +91,7 @@ routes.post('/submit', (req, res) => {
 });
 
 /** Append one labelled test row via Nango → Sheets only (no OpenAI, no Slack). */
-routes.post('/test/sheets', async (req, res) => {
-  const secret = process.env.SHEETS_TEST_SECRET?.trim();
-  if (!secret) {
-    res.status(503).json({
-      error:
-        'Disabled. Set SHEETS_TEST_SECRET in the environment, then send the same value in the X-Sheets-Test-Secret header.',
-    });
-    return;
-  }
-
-  const header = req.get('x-sheets-test-secret');
-  if (header !== secret) {
-    res.status(401).json({ error: 'Invalid or missing X-Sheets-Test-Secret header' });
-    return;
-  }
-
+routes.post('/test/sheets', async (_req, res) => {
   const timestampIso = new Date().toISOString();
   try {
     const result = await appendRowToSheet({
