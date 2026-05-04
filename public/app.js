@@ -3,7 +3,6 @@ const MESSAGE_MAX = 500;
 
 const messageEl = document.getElementById('message');
 const emojiEl = document.getElementById('emoji');
-const emojiPreviewEl = document.getElementById('emoji-preview');
 const charCountEl = document.getElementById('char-count');
 const submitEl = document.getElementById('submit');
 const clearEl = document.getElementById('clear');
@@ -13,7 +12,6 @@ const requestIdEl = document.getElementById('requestId');
 
 if (!(messageEl instanceof HTMLTextAreaElement)) throw new Error('#message missing');
 if (!(emojiEl instanceof HTMLInputElement)) throw new Error('#emoji missing');
-if (!(emojiPreviewEl instanceof HTMLSpanElement)) throw new Error('#emoji-preview missing');
 if (!(charCountEl instanceof HTMLParagraphElement)) throw new Error('#char-count missing');
 if (!(submitEl instanceof HTMLButtonElement)) throw new Error('#submit missing');
 if (!(clearEl instanceof HTMLButtonElement)) throw new Error('#clear missing');
@@ -42,8 +40,6 @@ function syncSubmitEnabled() {
 
 function setEmojiChoice(emoji) {
   emojiEl.value = emoji;
-  emojiPreviewEl.textContent = emoji || '·';
-  emojiPreviewEl.classList.toggle('has-choice', Boolean(emoji));
 
   document.querySelectorAll('.emoji-choice').forEach((btn) => {
     if (!(btn instanceof HTMLButtonElement)) return;

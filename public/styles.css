@@ -1,6 +1,6 @@
 /*
  * JuanSoulTrek home styles (subset, aligned with juansoultrek.com index.html).
- * Viewport locked (no document scroll); inner overflow only on relay/log panels as needed.
+ * Viewport locked — no document or dashboard panel scrolling (overflow clipped).
  */
 
 :root {
@@ -167,17 +167,8 @@ h2 {
   min-height: 0;
   display: flex;
   flex-direction: column;
-}
-
-.relay-body {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.trace-body {
   overflow: hidden;
 }
-
 body:not(.dark-mode) .card {
   background: rgba(255, 255, 255, 0.76);
 }
@@ -330,31 +321,6 @@ textarea.nango-input:focus {
   text-align: right;
 }
 
-.emoji-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.emoji-preview {
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
-  border: 1px dashed var(--border);
-  font-size: 2.35rem;
-  line-height: 1;
-  background: rgba(15, 23, 42, 0.28);
-  color: var(--muted);
-}
-
-.emoji-preview.has-choice {
-  border-style: solid;
-  border-color: rgba(167, 139, 250, 0.45);
-}
-
 .emoji-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
@@ -450,9 +416,8 @@ body:not(.dark-mode) .emoji-choice:hover {
   gap: 10px;
   flex: 1;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding-right: 4px;
+  overflow: hidden;
+  padding-right: 0;
 }
 
 .step {
