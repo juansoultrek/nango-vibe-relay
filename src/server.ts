@@ -57,6 +57,10 @@ const routes = express.Router();
 routes.get('/health', (_req, res) => {
   const sid = process.env.GOOGLE_SPREADSHEET_ID?.trim() ?? '';
   const range = process.env.GOOGLE_SHEETS_RANGE?.trim() || 'Sheet1!A1';
+  const sheetsDebug =
+    process.env.SHEETS_DEBUG?.trim().toLowerCase() === '1' ||
+    process.env.SHEETS_DEBUG?.trim().toLowerCase() === 'true' ||
+    process.env.SHEETS_DEBUG?.trim().toLowerCase() === 'yes';
   res.json({
     ok: true,
     basePath: MOUNT || '/',
@@ -66,6 +70,9 @@ routes.get('/health', (_req, res) => {
       spreadsheetIdSet: Boolean(sid),
       spreadsheetIdLength: sid.length,
       sheetsRange: range,
+      sheetsDebug,
+      /** What Node actually sees for SHEETS_DEBUG (null = unset). Helps verify cPanel injects the var. */
+      sheetsDebugEnvRaw: process.env.SHEETS_DEBUG === undefined ? null : process.env.SHEETS_DEBUG,
     },
   });
 });
@@ -126,7 +133,14 @@ routes.post('/test/sheets', async (_req, res) => {
       });
       return;
     }
-    res.status(502).json({ ok: false, detail: result.detail });
+    const body: { ok: false; detail: string; debug?: unknown } = {
+      ok: false,
+      detail: result.detail,
+    };
+    if ('debug' in result && result.debug !== undefined) {
+      body.debug = result.debug;
+    }
+    res.status(502).json(body);
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
     res.status(500).json({ ok: false, detail });
