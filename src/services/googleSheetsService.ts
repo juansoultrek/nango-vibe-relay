@@ -74,6 +74,7 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
       {
         appendCells: {
           sheetId,
+          fields: '*',
           rows: [
             {
               values: rowCells.map((cell) => ({ userEnteredValue: { stringValue: cell } })),
