@@ -23,7 +23,11 @@ curl -sS -X POST "http://localhost:8787/test/sheets" \
   -d '{}'
 ```
 
-Do **not** open `/test/sheets` in the browser (that sends **GET**). Use **`curl -X POST`** or another HTTP client with **POST**.
+`GET /test/sheets-meta` — read-only (spreadsheet title through Nango). Use this if proxy rows show **Failed** but OAuth shows **Success**: if GET fails too, the problem is token/scopes/ID/API enablement, not `batchUpdate`.
+
+```bash
+curl -sS "http://localhost:8787/test/sheets-meta"
+```
 
 With a path prefix (e.g. app under `/nango`), call `http://localhost:8787/nango/test/sheets` when the host forwards the full path, or `/test/sheets` when the proxy strips the prefix — same pattern as `/health`.
 

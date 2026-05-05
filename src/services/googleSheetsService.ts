@@ -117,6 +117,37 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
   return { ok: true };
 }
 
+/** GET spreadsheet metadata via Nango (read-only sanity check vs proxy failures after OAuth). */
+export async function fetchSpreadsheetTitleForTest(): Promise<
+  { ok: true; spreadsheetId: string; title: string } | { ok: false; detail: string }
+> {
+  const env = sheetsNangoEnv();
+  if (!env.ok) {
+    return { ok: false, detail: `Missing Nango/Google Sheets env: ${env.missing}` };
+  }
+
+  const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID?.trim();
+  if (!spreadsheetId) {
+    return { ok: false, detail: 'GOOGLE_SPREADSHEET_ID is not set' };
+  }
+
+  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=properties.title`;
+  const res = await nangoProxyFetch(env.env, downstream, { method: 'GET' });
+
+  const text = await safeText(res);
+  if (!res.ok) {
+    return { ok: false, detail: `Google Sheets HTTP ${res.status}: ${text}` };
+  }
+
+  try {
+    const data = JSON.parse(text) as { properties?: { title?: string } };
+    const title = data.properties?.title ?? '(no title)';
+    return { ok: true, spreadsheetId, title };
+  } catch {
+    return { ok: false, detail: `Invalid JSON from Sheets: ${text.slice(0, 400)}` };
+  }
+}
+
 async function safeText(res: Response): Promise<string> {
   try {
     return (await res.text()).slice(0, 800);

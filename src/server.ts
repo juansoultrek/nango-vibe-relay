@@ -4,7 +4,7 @@ import express from 'express';
 
 import { LogStore } from './logging/logStore';
 import { runPipeline } from './pipeline/runPipeline';
-import { appendRowToSheet, googleSheetsTabId } from './services/googleSheetsService';
+import { appendRowToSheet, fetchSpreadsheetTitleForTest, googleSheetsTabId } from './services/googleSheetsService';
 import type { SubmitBody } from './types';
 
 const logStore = new LogStore();
@@ -103,6 +103,26 @@ routes.post('/submit', (req, res) => {
   res.status(202).json({ requestId });
 
   void runPipeline(logStore, requestId, body.message, body.emoji);
+});
+
+/** GET: read-only Nango → Sheets (title). If this fails, proxy/token/ID/scopes — not batchUpdate body. */
+routes.get('/test/sheets-meta', async (_req, res) => {
+  try {
+    const result = await fetchSpreadsheetTitleForTest();
+    if (result.ok) {
+      res.json({
+        ok: true,
+        message: 'Nango proxy can read this spreadsheet.',
+        spreadsheetId: result.spreadsheetId,
+        title: result.title,
+      });
+      return;
+    }
+    res.status(502).json({ ok: false, detail: result.detail });
+  } catch (err: unknown) {
+    const detail = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ ok: false, detail });
+  }
 });
 
 /** Sheets test: browser visits use GET — explain; only POST runs the append. */
