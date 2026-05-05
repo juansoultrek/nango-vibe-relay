@@ -23,14 +23,21 @@ function sheetsDebugEnabled(): boolean {
 
 export type AppendRowResult = { ok: true } | { ok: false; detail: string; debug?: SheetsAppendDebug };
 
-/**
- * Google's Sheets REST paths treat `sheet!A1` literally; intermediaries choke on bare `!`.
- * encodeURIComponent deliberately does NOT encode `!` (RFC 3986 subset), so we force `%21`.
- */
-function encodeA1RangeForPath(range: string): string {
-  return encodeURIComponent(range).replace(/!/g, '%21');
+/** Tab id from `...#gid=<n>` in the Sheets URL; first tab is almost always 0. */
+export function googleSheetsTabId(): number {
+  const raw =
+    process.env.GOOGLE_SHEETS_TAB_ID?.trim() ||
+    process.env.GOOGLE_SHEETS_GID?.trim() ||
+    '0';
+  const n = Number.parseInt(raw, 10);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
 }
 
+/**
+ * Append one row via `spreadsheets:batchUpdate` + `appendCells`.
+ * Avoids `/values/{Sheet1!A1}:append` — `!` + Nango's single `encodeURIComponent` on the full URL
+ * produced `%2521` upstream and Google HTML 404s.
+ */
 export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRowResult> {
   const env = sheetsNangoEnv();
   if (!env.ok) {
@@ -45,31 +52,47 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
     return { ok: false, detail: 'GOOGLE_SPREADSHEET_ID is not set' };
   }
 
-  const rangeRaw = process.env.GOOGLE_SHEETS_RANGE?.trim() || 'Sheet1!A1';
-  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeA1RangeForPath(rangeRaw)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const sheetId = googleSheetsTabId();
+  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
 
   const debug = sheetsDebugEnabled();
   const nangoProxyUrl = debug ? buildNangoProxyUrl(env.env, downstream) : '';
 
   if (debug) {
     console.error('[nango-vibe-relay:SHEETS_DEBUG] downstreamUrl=', downstream);
+    console.error('[nango-vibe-relay:SHEETS_DEBUG] sheetId=', sheetId);
     console.error('[nango-vibe-relay:SHEETS_DEBUG] nangoProxyUrl=', nangoProxyUrl);
   }
 
-  const values = [[
+  const rowCells = [
     row.timestampIso,
     row.emoji,
     row.originalMessage,
     row.cleanedMessage,
     row.interpretedMood,
-  ]];
+  ];
+
+  const payload = {
+    requests: [
+      {
+        appendCells: {
+          sheetId,
+          rows: [
+            {
+              values: rowCells.map((cell) => ({ userEnteredValue: { stringValue: cell } })),
+            },
+          ],
+        },
+      },
+    ],
+  };
 
   const res = await nangoProxyFetch(env.env, downstream, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ values }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {

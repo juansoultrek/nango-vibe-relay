@@ -4,7 +4,7 @@ import express from 'express';
 
 import { LogStore } from './logging/logStore';
 import { runPipeline } from './pipeline/runPipeline';
-import { appendRowToSheet } from './services/googleSheetsService';
+import { appendRowToSheet, googleSheetsTabId } from './services/googleSheetsService';
 import type { SubmitBody } from './types';
 
 const logStore = new LogStore();
@@ -56,7 +56,7 @@ const routes = express.Router();
 
 routes.get('/health', (_req, res) => {
   const sid = process.env.GOOGLE_SPREADSHEET_ID?.trim() ?? '';
-  const range = process.env.GOOGLE_SHEETS_RANGE?.trim() || 'Sheet1!A1';
+  const rangeLegacy = process.env.GOOGLE_SHEETS_RANGE?.trim() || null;
   const sheetsDebug =
     process.env.SHEETS_DEBUG?.trim().toLowerCase() === '1' ||
     process.env.SHEETS_DEBUG?.trim().toLowerCase() === 'true' ||
@@ -69,7 +69,8 @@ routes.get('/health', (_req, res) => {
     sheets: {
       spreadsheetIdSet: Boolean(sid),
       spreadsheetIdLength: sid.length,
-      sheetsRange: range,
+      sheetsTabId: googleSheetsTabId(),
+      sheetsRangeLegacy: rangeLegacy,
       sheetsDebug,
       /** What Node actually sees for SHEETS_DEBUG (null = unset). Helps verify cPanel injects the var. */
       sheetsDebugEnvRaw: process.env.SHEETS_DEBUG === undefined ? null : process.env.SHEETS_DEBUG,

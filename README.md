@@ -15,7 +15,7 @@ Then open `http://localhost:8787` (unless `PORT` is set).
 
 ### Test Google Sheets only (no AI, no Slack)
 
-Ensure **`NANGO_*`** and **`GOOGLE_SPREADSHEET_ID`** / **`GOOGLE_SHEETS_RANGE`** are set like for a normal submit.
+Ensure **`NANGO_*`**, **`GOOGLE_SPREADSHEET_ID`**, and **`GOOGLE_SHEETS_TAB_ID`** (usually `0` for the first tab — same number as **`#gid=`** in the Sheets URL). Rows are appended with **`spreadsheets.batchUpdate`** + **`appendCells`** so the Nango proxy URL stays free of **`Sheet1!A1`**-style paths that break encoding.
 
 ```bash
 curl -sS -X POST "http://localhost:8787/test/sheets" \
