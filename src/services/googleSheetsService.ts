@@ -9,7 +9,8 @@ export type SheetsAppendInput = {
 };
 
 export type SheetsAppendDebug = {
-  downstreamUrl: string;
+  /** Path after Nango `/proxy/` (joined to Sheets base URL). */
+  providerPath: string;
   nangoProxyUrl: string;
   httpStatus: number;
   responseContentType: string | null;
@@ -33,11 +34,7 @@ export function googleSheetsTabId(): number {
   return Number.isFinite(n) && n >= 0 ? n : 0;
 }
 
-/**
- * Append one row via `spreadsheets:batchUpdate` + `appendCells`.
- * Avoids `/values/{Sheet1!A1}:append` — `!` + Nango's single `encodeURIComponent` on the full URL
- * produced `%2521` upstream and Google HTML 404s.
- */
+/** Append via `spreadsheet.batchUpdate`; Nango `/proxy/` must receive paths like `v4/...`, not full `https://...` URLs. */
 export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRowResult> {
   const env = sheetsNangoEnv();
   if (!env.ok) {
@@ -53,13 +50,13 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
   }
 
   const sheetId = googleSheetsTabId();
-  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+  const providerPath = `v4/spreadsheets/${spreadsheetId}:batchUpdate`;
 
   const debug = sheetsDebugEnabled();
-  const nangoProxyUrl = debug ? buildNangoProxyUrl(env.env, downstream) : '';
+  const nangoProxyUrl = debug ? buildNangoProxyUrl(env.env, providerPath) : '';
 
   if (debug) {
-    console.error('[nango-vibe-relay:SHEETS_DEBUG] downstreamUrl=', downstream);
+    console.error('[nango-vibe-relay:SHEETS_DEBUG] providerPath=', providerPath);
     console.error('[nango-vibe-relay:SHEETS_DEBUG] sheetId=', sheetId);
     console.error('[nango-vibe-relay:SHEETS_DEBUG] nangoProxyUrl=', nangoProxyUrl);
   }
@@ -87,7 +84,7 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
     ],
   };
 
-  const res = await nangoProxyFetch(env.env, downstream, {
+  const res = await nangoProxyFetch(env.env, providerPath, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -103,7 +100,7 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
     };
     if (debug) {
       fail.debug = {
-        downstreamUrl: downstream,
+        providerPath,
         nangoProxyUrl,
         httpStatus: res.status,
         responseContentType: res.headers.get('content-type'),
@@ -131,8 +128,8 @@ export async function fetchSpreadsheetTitleForTest(): Promise<
     return { ok: false, detail: 'GOOGLE_SPREADSHEET_ID is not set' };
   }
 
-  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=properties.title`;
-  const res = await nangoProxyFetch(env.env, downstream, { method: 'GET' });
+  const providerPath = `v4/spreadsheets/${spreadsheetId}?fields=properties.title`;
+  const res = await nangoProxyFetch(env.env, providerPath, { method: 'GET' });
 
   const text = await safeText(res);
   if (!res.ok) {

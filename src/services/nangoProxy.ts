@@ -57,15 +57,19 @@ function buildEnv(providerConfigKey: string, connectionId: string): NangoEnv {
   };
 }
 
-/** Full URL to Nango's proxy endpoint for a given downstream API URL (no secrets in the URL). */
-export function buildNangoProxyUrl(env: NangoEnv, downstreamUrl: string): string {
-  const encoded = encodeURIComponent(downstreamUrl);
-  return `${env.host.replace(/\/+$/, '')}/proxy/${encoded}`;
+/**
+ * Nango resolves `GET ${host}/proxy/{path}` to `{integrationBaseUrl}/{path}`.
+ * Do NOT pass a full URL (see Nango docs: path is appended to provider base — e.g. `v4/...` after `https://sheets.googleapis.com/`).
+ * Passing `encodeURIComponent(https://...)` made Google serve 404 /https%253A...
+ */
+export function buildNangoProxyUrl(env: NangoEnv, providerPath: string): string {
+  const p = providerPath.replace(/^\/+/, '');
+  return `${env.host.replace(/\/+$/, '')}/proxy/${p}`;
 }
 
-/** Call an upstream HTTPS URL via Nango. `downstreamUrl` must include scheme and host (e.g. https://slack.com/api/…). */
-export async function nangoProxyFetch(env: NangoEnv, downstreamUrl: string, init: RequestInit): Promise<Response> {
-  const url = buildNangoProxyUrl(env, downstreamUrl);
+/** @param providerPath Relative path (+ optional query) on the provider API, e.g. `v4/spreadsheets/{id}:batchUpdate` */
+export async function nangoProxyFetch(env: NangoEnv, providerPath: string, init: RequestInit): Promise<Response> {
+  const url = buildNangoProxyUrl(env, providerPath);
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${env.secret}`);
   headers.set('Provider-Config-Key', env.providerConfigKey);
