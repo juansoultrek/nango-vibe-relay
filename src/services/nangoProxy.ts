@@ -57,10 +57,15 @@ function buildEnv(providerConfigKey: string, connectionId: string): NangoEnv {
   };
 }
 
+/** Full URL to Nango's proxy endpoint for a given downstream API URL (no secrets in the URL). */
+export function buildNangoProxyUrl(env: NangoEnv, downstreamUrl: string): string {
+  const encoded = encodeURIComponent(downstreamUrl);
+  return `${env.host.replace(/\/+$/, '')}/proxy/${encoded}`;
+}
+
 /** Call an upstream HTTPS URL via Nango. `downstreamUrl` must include scheme and host (e.g. https://slack.com/api/…). */
 export async function nangoProxyFetch(env: NangoEnv, downstreamUrl: string, init: RequestInit): Promise<Response> {
-  const encoded = encodeURIComponent(downstreamUrl);
-  const url = `${env.host.replace(/\/+$/, '')}/proxy/${encoded}`;
+  const url = buildNangoProxyUrl(env, downstreamUrl);
   const headers = new Headers(init.headers);
   headers.set('Authorization', `Bearer ${env.secret}`);
   headers.set('Provider-Config-Key', env.providerConfigKey);
