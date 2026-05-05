@@ -55,11 +55,18 @@ app.use(express.json({ limit: '64kb' }));
 const routes = express.Router();
 
 routes.get('/health', (_req, res) => {
+  const sid = process.env.GOOGLE_SPREADSHEET_ID?.trim() ?? '';
+  const range = process.env.GOOGLE_SHEETS_RANGE?.trim() || 'Sheet1!A1';
   res.json({
     ok: true,
     basePath: MOUNT || '/',
     explicitBase: readExplicitBase() || null,
     uptimeSeconds: Number(process.uptime().toFixed(3)),
+    sheets: {
+      spreadsheetIdSet: Boolean(sid),
+      spreadsheetIdLength: sid.length,
+      sheetsRange: range,
+    },
   });
 });
 
