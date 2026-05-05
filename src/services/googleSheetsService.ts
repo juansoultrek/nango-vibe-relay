@@ -23,6 +23,14 @@ function sheetsDebugEnabled(): boolean {
 
 export type AppendRowResult = { ok: true } | { ok: false; detail: string; debug?: SheetsAppendDebug };
 
+/**
+ * Google's Sheets REST paths treat `sheet!A1` literally; intermediaries choke on bare `!`.
+ * encodeURIComponent deliberately does NOT encode `!` (RFC 3986 subset), so we force `%21`.
+ */
+function encodeA1RangeForPath(range: string): string {
+  return encodeURIComponent(range).replace(/!/g, '%21');
+}
+
 export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRowResult> {
   const env = sheetsNangoEnv();
   if (!env.ok) {
@@ -38,7 +46,7 @@ export async function appendRowToSheet(row: SheetsAppendInput): Promise<AppendRo
   }
 
   const rangeRaw = process.env.GOOGLE_SHEETS_RANGE?.trim() || 'Sheet1!A1';
-  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(rangeRaw)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const downstream = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeA1RangeForPath(rangeRaw)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
 
   const debug = sheetsDebugEnabled();
   const nangoProxyUrl = debug ? buildNangoProxyUrl(env.env, downstream) : '';
