@@ -2,7 +2,7 @@
   "name": "nango-vibe-relay",
   "version": "0.1.0",
   "private": false,
-  "description": "Nango Vibe Relay — message + emoji to AI-cleaned signal, Google Sheets, Slack (Nango OAuth), with step-by-step logs.",
+  "description": "Nango Vibe Relay — mood id + message through OpenAI, Google Sheets & Slack via Nango, polled step logs.",
   "license": "MIT",
   "engines": {
     "node": ">=20"
