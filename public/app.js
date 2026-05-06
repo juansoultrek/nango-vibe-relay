@@ -205,10 +205,10 @@ function renderSteps(steps, requestId) {
         text.textContent = companion || cleaned;
         const refined = document.createElement('p');
         refined.className = 'ai-preview-refined';
-        refined.textContent = cleaned && companion ? `Versión clara: ${cleaned}` : '';
+        refined.textContent = cleaned && companion ? `Clear line: ${cleaned}` : '';
         const sub = document.createElement('p');
         sub.className = 'ai-preview-mood';
-        sub.textContent = mood ? `Tono: ${mood}` : '';
+        sub.textContent = mood ? `Emoji meaning: ${mood}` : '';
         preview.appendChild(label);
         preview.appendChild(text);
         if (refined.textContent) preview.appendChild(refined);

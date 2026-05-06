@@ -54,7 +54,7 @@ export async function runPipeline(
 
     logStore.mergeStep(requestId, 'openai_process', {
       status: 'success',
-      message: `${ai.data.interpretedMood} · respuesta lista`,
+      message: `${ai.data.interpretedMood} · response ready`,
       ai: {
         cleanedMessage: ai.data.cleanedMessage,
         interpretedMood: ai.data.interpretedMood,
