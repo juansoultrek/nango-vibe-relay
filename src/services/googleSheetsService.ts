@@ -2,7 +2,7 @@ import { nangoProxyFetch, buildNangoProxyUrl, sheetsNangoEnv, type NangoEnv } fr
 
 export type SheetsAppendInput = {
   originalMessage: string;
-  /** Column EMOJI: canonical picker id (e.g. sob), not a Unicode glyph. */
+  /** Column EMOJI: Unicode glyph (mapped from picker id server-side). */
   emoji: string;
   interpretedMood: string;
   /** Popup + “OpenAI interpretation” column — encouragement + brief read. */

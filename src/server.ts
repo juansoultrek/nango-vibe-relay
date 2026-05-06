@@ -151,7 +151,7 @@ routes.post('/test/sheets', async (_req, res) => {
   try {
     const result = await appendRowToSheet({
       timestampIso,
-      emoji: 'sheet-connectivity-test',
+      emoji: '🧪',
       originalMessage: '[Sheets connectivity test]',
       companionNote: '[Sheets connectivity test — companion]',
       interpretedMood: 'test',
@@ -160,7 +160,7 @@ routes.post('/test/sheets', async (_req, res) => {
     if (result.ok) {
       res.json({
         ok: true,
-        message: 'Test row appended. Check the spreadsheet for row sheet-connectivity-test and the test markers.',
+        message: 'Test row appended. Check the spreadsheet for 🧪 and the test markers.',
       });
       return;
     }

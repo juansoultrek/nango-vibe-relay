@@ -1,3 +1,4 @@
+import { emojiIdToGlyph } from '../emojiRegistry';
 import { LogStore } from '../logging/logStore';
 import { runOpenAi } from '../services/aiService';
 import { appendRowToSheet } from '../services/googleSheetsService';
@@ -36,6 +37,7 @@ export async function runPipeline(
     }
 
     const emojiId = emojiValidation.emojiId;
+    const emojiGlyph = emojiIdToGlyph(emojiId);
 
     logStore.mergeStep(requestId, 'validate_input', { status: 'success', message: 'Payload looks good' });
 
@@ -63,14 +65,14 @@ export async function runPipeline(
     const timestampIso = new Date().toISOString();
 
     const sheetsOk = await runSheetsWithRetries(logStore, requestId, {
-      emoji: emojiId,
+      emoji: emojiGlyph,
       originalMessage: message,
       companionNote: ai.data.companionNote,
       interpretedMood: ai.data.interpretedMood,
       timestampIso,
     });
 
-    let snapshot = `\`${emojiId}\` *${ai.data.interpretedMood}*\n${ai.data.companionNote}\n_${ai.data.cleanedMessage}_`;
+    let snapshot = `${emojiGlyph} \`${emojiId}\` *${ai.data.interpretedMood}*\n${ai.data.companionNote}\n_${ai.data.cleanedMessage}_`;
     if (!sheetsOk) {
       snapshot += '\n_(Google Sheets append failed — row may be missing; check Nango/proxy/logs.)_';
     }

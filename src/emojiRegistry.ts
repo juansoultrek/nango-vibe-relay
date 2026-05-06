@@ -1,6 +1,6 @@
 /**
- * Mood picker: stable ASCII ids (what the client submits, Sheets column EMOJI stores,
- * OpenAI receives). Display glyphs live only in the HTML grid.
+ * Mood picker: stable ASCII ids — client submits these; OpenAI receives the id only.
+ * Google Sheets column EMOJI is written as the Unicode glyph (mapped here).
  */
 
 export const EMOJI_ID_TO_GLYPH: Record<string, string> = {
@@ -42,6 +42,13 @@ export const KNOWN_MOOD_EMOJI_IDS = Object.freeze(Object.keys(EMOJI_ID_TO_GLYPH)
 /** Readable label for prose (fallback / repair paths), ASCII only. */
 export function emojiIdToLabel(id: string): string {
   return id.trim().toLowerCase().replace(/-/g, ' ');
+}
+
+/** Glyph for spreadsheets / UI; falls back to the raw id when unknown (e.g. test tokens). */
+export function emojiIdToGlyph(emojiId: string): string {
+  const id = emojiId.trim().toLowerCase();
+  const g = EMOJI_ID_TO_GLYPH[id];
+  return typeof g === 'string' ? g : emojiId;
 }
 
 /** Accept canonical id or legacy single-glyph submits; return canonical id or null. */
