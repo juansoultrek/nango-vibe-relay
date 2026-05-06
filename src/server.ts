@@ -66,6 +66,10 @@ routes.get('/health', (_req, res) => {
     basePath: MOUNT || '/',
     explicitBase: readExplicitBase() || null,
     uptimeSeconds: Number(process.uptime().toFixed(3)),
+    openai: {
+      apiKeySet: Boolean(process.env.OPENAI_API_KEY?.trim()),
+      model: process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini',
+    },
     sheets: {
       spreadsheetIdSet: Boolean(sid),
       spreadsheetIdLength: sid.length,
