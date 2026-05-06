@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body class="dark-mode">
     <main>
@@ -23,19 +23,19 @@
           <p class="eyebrow">Project dashboards</p>
           <h2>Nango integration debugger.</h2>
           <p class="intro">
-            <strong>What happens:</strong> Submit triggers validation, then OpenAI reads your message plus emoji
-            and returns a cleaned line and interpreted mood. With env vars set, Nango proxies Google Sheets (append
-            row) and Slack (channel post). The step log records each phase so OAuth or API failures show up next to
-            the step that broke.
+            <strong>What happens:</strong> OpenAI returns a short <strong>mood label</strong>, a paraphrased
+            <strong>clear line</strong>, and a warm note (encouragement + a light read of why you might feel that way).
+            The full reply shows <strong>inside the OpenAI row</strong> in the step log. Nango handles Sheets append and
+            Slack when configured.
           </p>
           <p class="intro intro-follow">
             <strong>Message:</strong> Write in plain language, between <strong>10 and 500 characters</strong>. One or
             two sentences about how you feel or what is on your mind is ideal — concrete beats vague filler.
           </p>
           <p class="intro intro-follow">
-            <strong>Mood emoji — required:</strong> Pick exactly one face before you submit (no emoji means the relay
-            stops at validation). The emoji gives the model an explicit tone anchor so interpreted mood and downstream
-            summaries track how you signaled you felt, not only the words.
+            <strong>Mood face — required:</strong> Pick exactly one tile before you submit. The relay stores and sends the
+            face’s canonical <strong>id</strong> (e.g. <code class="mono">star-struck</code>, <code class="mono">sob</code>)
+            — not the Unicode glyph — so OpenAI always grounds on the same label plus your text.
           </p>
         </div>
 
@@ -63,35 +63,36 @@
 
               <label class="field-label" id="emoji-label">Mood emoji <span class="req">(required)</span></label>
               <p class="field-hint">
-                Hover a tile for glow, click one face — Relay vibe stays disabled until an emoji is chosen.
+                Hover a tile for glow, click one face — Relay vibe stays disabled until a mood is chosen. The server
+                sends a stable face id to OpenAI (not a raw Unicode character).
               </p>
               <input type="hidden" id="emoji" name="emoji" value="" autocomplete="off" aria-required="true" />
               <div class="emoji-grid" role="group" aria-labelledby="emoji-label">
-                <button type="button" class="emoji-choice" data-emoji="😀" aria-label="grinning">😀</button>
-                <button type="button" class="emoji-choice" data-emoji="😃" aria-label="smiley">😃</button>
-                <button type="button" class="emoji-choice" data-emoji="😄" aria-label="smile">😄</button>
-                <button type="button" class="emoji-choice" data-emoji="😁" aria-label="beaming">😁</button>
-                <button type="button" class="emoji-choice" data-emoji="😊" aria-label="blush">😊</button>
-                <button type="button" class="emoji-choice" data-emoji="🙂" aria-label="slight smile">🙂</button>
-                <button type="button" class="emoji-choice" data-emoji="😉" aria-label="wink">😉</button>
-                <button type="button" class="emoji-choice" data-emoji="😍" aria-label="heart eyes">😍</button>
-                <button type="button" class="emoji-choice" data-emoji="🤩" aria-label="star-struck">🤩</button>
-                <button type="button" class="emoji-choice" data-emoji="😘" aria-label="kiss">😘</button>
-                <button type="button" class="emoji-choice" data-emoji="😎" aria-label="cool">😎</button>
-                <button type="button" class="emoji-choice" data-emoji="🤓" aria-label="nerd">🤓</button>
-                <button type="button" class="emoji-choice" data-emoji="🧐" aria-label="monocle">🧐</button>
-                <button type="button" class="emoji-choice" data-emoji="🤔" aria-label="thinking">🤔</button>
-                <button type="button" class="emoji-choice" data-emoji="😴" aria-label="sleeping">😴</button>
-                <button type="button" class="emoji-choice" data-emoji="😮" aria-label="surprised">😮</button>
-                <button type="button" class="emoji-choice" data-emoji="😅" aria-label="sweat smile">😅</button>
-                <button type="button" class="emoji-choice" data-emoji="😢" aria-label="cry">😢</button>
-                <button type="button" class="emoji-choice" data-emoji="😭" aria-label="sob">😭</button>
-                <button type="button" class="emoji-choice" data-emoji="😤" aria-label="steam">😤</button>
-                <button type="button" class="emoji-choice" data-emoji="😡" aria-label="rage">😡</button>
-                <button type="button" class="emoji-choice" data-emoji="🥳" aria-label="party">🥳</button>
-                <button type="button" class="emoji-choice" data-emoji="🙃" aria-label="upside-down">🙃</button>
-                <button type="button" class="emoji-choice" data-emoji="😇" aria-label="halo">😇</button>
-                <button type="button" class="emoji-choice" data-emoji="🥺" aria-label="pleading">🥺</button>
+                <button type="button" class="emoji-choice" data-emoji-id="grinning" aria-label="grinning">😀</button>
+                <button type="button" class="emoji-choice" data-emoji-id="smiley" aria-label="smiley">😃</button>
+                <button type="button" class="emoji-choice" data-emoji-id="smile" aria-label="smile">😄</button>
+                <button type="button" class="emoji-choice" data-emoji-id="beaming" aria-label="beaming">😁</button>
+                <button type="button" class="emoji-choice" data-emoji-id="blush" aria-label="blush">😊</button>
+                <button type="button" class="emoji-choice" data-emoji-id="slight-smile" aria-label="slight smile">🙂</button>
+                <button type="button" class="emoji-choice" data-emoji-id="wink" aria-label="wink">😉</button>
+                <button type="button" class="emoji-choice" data-emoji-id="heart-eyes" aria-label="heart eyes">😍</button>
+                <button type="button" class="emoji-choice" data-emoji-id="star-struck" aria-label="star-struck">🤩</button>
+                <button type="button" class="emoji-choice" data-emoji-id="kiss" aria-label="kiss">😘</button>
+                <button type="button" class="emoji-choice" data-emoji-id="cool" aria-label="cool">😎</button>
+                <button type="button" class="emoji-choice" data-emoji-id="nerd" aria-label="nerd">🤓</button>
+                <button type="button" class="emoji-choice" data-emoji-id="monocle" aria-label="monocle">🧐</button>
+                <button type="button" class="emoji-choice" data-emoji-id="thinking" aria-label="thinking">🤔</button>
+                <button type="button" class="emoji-choice" data-emoji-id="sleeping" aria-label="sleeping">😴</button>
+                <button type="button" class="emoji-choice" data-emoji-id="surprised" aria-label="surprised">😮</button>
+                <button type="button" class="emoji-choice" data-emoji-id="sweat-smile" aria-label="sweat smile">😅</button>
+                <button type="button" class="emoji-choice" data-emoji-id="cry" aria-label="cry">😢</button>
+                <button type="button" class="emoji-choice" data-emoji-id="sob" aria-label="sob">😭</button>
+                <button type="button" class="emoji-choice" data-emoji-id="steam" aria-label="steam">😤</button>
+                <button type="button" class="emoji-choice" data-emoji-id="rage" aria-label="rage">😡</button>
+                <button type="button" class="emoji-choice" data-emoji-id="party" aria-label="party">🥳</button>
+                <button type="button" class="emoji-choice" data-emoji-id="upside-down" aria-label="upside-down">🙃</button>
+                <button type="button" class="emoji-choice" data-emoji-id="halo" aria-label="halo">😇</button>
+                <button type="button" class="emoji-choice" data-emoji-id="pleading" aria-label="pleading">🥺</button>
               </div>
             </div>
             <div class="actions">
@@ -105,7 +106,6 @@
             <div class="trace-body">
               <div class="tag">Live trace</div>
               <h3>Step log</h3>
-              <p class="mono subtle request-line" id="requestId"></p>
               <div id="log" class="log"></div>
             </div>
           </article>
@@ -113,6 +113,6 @@
       </section>
     </main>
 
-    <script src="app.js" defer></script>
+    <script src="app.js?v=7" defer></script>
   </body>
 </html>

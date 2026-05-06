@@ -11,7 +11,7 @@ export async function runPipeline(
 ): Promise<void> {
   try {
     const message = messageRaw.trim();
-    const emoji = emojiRaw.trim();
+    const emojiSubmitted = emojiRaw.trim();
 
     logStore.mergeStep(requestId, 'validate_input', { status: 'running', message: 'Validating payload' });
 
@@ -25,7 +25,7 @@ export async function runPipeline(
       return;
     }
 
-    const emojiValidation = logStore.validateEmoji(emoji);
+    const emojiValidation = logStore.validateEmoji(emojiSubmitted);
     if (!emojiValidation.ok) {
       logStore.mergeStep(requestId, 'validate_input', {
         status: 'error',
@@ -35,10 +35,12 @@ export async function runPipeline(
       return;
     }
 
+    const emojiId = emojiValidation.emojiId;
+
     logStore.mergeStep(requestId, 'validate_input', { status: 'success', message: 'Payload looks good' });
 
     logStore.mergeStep(requestId, 'openai_process', { status: 'running', message: 'Calling OpenAI' });
-    const ai = await runOpenAi(message, emoji);
+    const ai = await runOpenAi(message, emojiId);
     if (!ai.ok) {
       logStore.mergeStep(requestId, 'openai_process', {
         status: 'error',
@@ -50,29 +52,29 @@ export async function runPipeline(
 
     logStore.mergeStep(requestId, 'openai_process', {
       status: 'success',
-      message: `Interpreted mood: ${ai.data.interpretedMood}`,
+      message: `${ai.data.interpretedMood} · respuesta lista`,
+      ai: {
+        cleanedMessage: ai.data.cleanedMessage,
+        interpretedMood: ai.data.interpretedMood,
+        companionNote: ai.data.companionNote,
+      },
     });
 
     const timestampIso = new Date().toISOString();
 
     const sheetsOk = await runSheetsWithRetries(logStore, requestId, {
-      emoji,
+      emoji: emojiId,
       originalMessage: message,
-      cleanedMessage: ai.data.cleanedMessage,
+      companionNote: ai.data.companionNote,
       interpretedMood: ai.data.interpretedMood,
       timestampIso,
     });
 
+    let snapshot = `\`${emojiId}\` *${ai.data.interpretedMood}*\n${ai.data.companionNote}\n_${ai.data.cleanedMessage}_`;
     if (!sheetsOk) {
-      logStore.mergeStep(requestId, 'slack_notify', {
-        status: 'error',
-        message: 'Skipped because Google Sheets did not succeed',
-      });
-      logStore.markFinished(requestId);
-      return;
+      snapshot += '\n_(Google Sheets append failed — row may be missing; check Nango/proxy/logs.)_';
     }
 
-    const snapshot = `${emoji} *${ai.data.interpretedMood}*\n${ai.data.cleanedMessage}`;
     await runSlack(logStore, requestId, snapshot);
   } catch (err: unknown) {
     const detail = err instanceof Error ? err.message : String(err);
@@ -91,7 +93,7 @@ async function runSheetsWithRetries(
   row: {
     originalMessage: string;
     emoji: string;
-    cleanedMessage: string;
+    companionNote: string;
     interpretedMood: string;
     timestampIso: string;
   },

@@ -4,7 +4,12 @@ import express from 'express';
 
 import { LogStore } from './logging/logStore';
 import { runPipeline } from './pipeline/runPipeline';
-import { appendRowToSheet, fetchSpreadsheetTitleForTest, googleSheetsTabId } from './services/googleSheetsService';
+import {
+  appendRowToSheet,
+  fetchSpreadsheetTitleForTest,
+  googleSheetsTabId,
+  googleSheetsTabName,
+} from './services/googleSheetsService';
 import type { SubmitBody } from './types';
 
 const logStore = new LogStore();
@@ -73,6 +78,7 @@ routes.get('/health', (_req, res) => {
     sheets: {
       spreadsheetIdSet: Boolean(sid),
       spreadsheetIdLength: sid.length,
+      sheetsTabName: googleSheetsTabName(),
       sheetsTabId: googleSheetsTabId(),
       sheetsRangeLegacy: rangeLegacy,
       sheetsDebug,
@@ -145,16 +151,16 @@ routes.post('/test/sheets', async (_req, res) => {
   try {
     const result = await appendRowToSheet({
       timestampIso,
-      emoji: '🧪',
+      emoji: 'sheet-connectivity-test',
       originalMessage: '[Sheets connectivity test]',
-      cleanedMessage: '[Sheets connectivity test]',
+      companionNote: '[Sheets connectivity test — companion]',
       interpretedMood: 'test',
     });
 
     if (result.ok) {
       res.json({
         ok: true,
-        message: 'Test row appended. Check the spreadsheet for 🧪 and the test markers.',
+        message: 'Test row appended. Check the spreadsheet for row sheet-connectivity-test and the test markers.',
       });
       return;
     }

@@ -1,6 +1,6 @@
 # Nango Vibe Relay
 
-Node.js + TypeScript demo: message + emoji → **OpenAI** → optional **Nango** → **Google Sheets** + **Slack**, with a polled step log.
+Node.js + TypeScript demo: message + mood face id → **OpenAI** → optional **Nango** → **Google Sheets** + **Slack**, with a polled step log.
 
 ## Local run
 
@@ -18,7 +18,7 @@ Then open `http://localhost:8787` (unless `PORT` is set).
 1. [API keys](https://platform.openai.com/api-keys) → crea una clave y ponla en **`OPENAI_API_KEY`** (local `.env` o variables del host Node).
 2. Opcional: **`OPENAI_MODEL`** — por defecto **`gpt-4o-mini`** (barato; soporta `response_format: json_object`).
 3. **`GET /health`** incluye **`openai.apiKeySet`** y **`openai.model`** para comprobar que el proceso ve la clave (sin exponer el valor).
-4. Prueba end-to-end: desde la UI envía mensaje (10–500 caracteres) + emoji; el step log debe mostrar **OpenAI** → **Sheets** → **Slack** si todo está configurado.
+4. Prueba end-to-end: desde la UI envía mensaje (10–500 caracteres) + id de cara (p. ej. `sob`, `star-struck`); el step log debe mostrar **OpenAI** → **Sheets** → **Slack** si todo está configurado.
 
 ### Test Google Sheets only (no AI, no Slack)
 

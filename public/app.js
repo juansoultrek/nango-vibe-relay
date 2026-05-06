@@ -8,7 +8,6 @@ const submitEl = document.getElementById('submit');
 const clearEl = document.getElementById('clear');
 const bannerEl = document.getElementById('banner');
 const logEl = document.getElementById('log');
-const requestIdEl = document.getElementById('requestId');
 
 if (!(messageEl instanceof HTMLTextAreaElement)) throw new Error('#message missing');
 if (!(emojiEl instanceof HTMLInputElement)) throw new Error('#emoji missing');
@@ -17,10 +16,16 @@ if (!(submitEl instanceof HTMLButtonElement)) throw new Error('#submit missing')
 if (!(clearEl instanceof HTMLButtonElement)) throw new Error('#clear missing');
 if (!(bannerEl instanceof HTMLParagraphElement)) throw new Error('#banner missing');
 if (!(logEl instanceof HTMLDivElement)) throw new Error('#log missing');
-if (!(requestIdEl instanceof HTMLParagraphElement)) throw new Error('#requestId missing');
 
 let pollTimer = null;
 let submitting = false;
+
+function stopPolling() {
+  if (pollTimer != null) {
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
 
 function syncCharCount() {
   const n = messageEl.value.length;
@@ -38,12 +43,12 @@ function syncSubmitEnabled() {
   submitEl.disabled = !(okLen && okEmoji);
 }
 
-function setEmojiChoice(emoji) {
-  emojiEl.value = emoji;
+function setEmojiChoice(emojiId) {
+  emojiEl.value = emojiId;
 
   document.querySelectorAll('.emoji-choice').forEach((btn) => {
     if (!(btn instanceof HTMLButtonElement)) return;
-    btn.classList.toggle('is-selected', btn.dataset.emoji === emoji);
+    btn.classList.toggle('is-selected', btn.dataset.emojiId === emojiId);
   });
   syncSubmitEnabled();
 }
@@ -51,8 +56,8 @@ function setEmojiChoice(emoji) {
 document.querySelectorAll('.emoji-choice').forEach((btn) => {
   if (!(btn instanceof HTMLButtonElement)) return;
   btn.addEventListener('click', () => {
-    const ch = btn.dataset.emoji ?? '';
-    setEmojiChoice(ch);
+    const id = btn.dataset.emojiId ?? '';
+    setEmojiChoice(id);
   });
 });
 
@@ -69,15 +74,15 @@ clearEl.addEventListener('click', () => {
   setEmojiChoice('');
   bannerEl.textContent = '';
   bannerEl.classList.remove('error');
-  requestIdEl.textContent = '';
   logEl.innerHTML = '';
+  stopPolling();
 });
 
 submitEl.addEventListener('click', async () => {
   bannerEl.classList.remove('error');
   bannerEl.textContent = '';
-  requestIdEl.textContent = '';
   logEl.innerHTML = '';
+  stopPolling();
 
   const message = messageEl.value.trim();
   const emoji = emojiEl.value.trim();
@@ -118,8 +123,8 @@ submitEl.addEventListener('click', async () => {
       throw new Error('Unexpected response from /submit');
     }
 
-    requestIdEl.textContent = `requestId: ${requestId}`;
-    bannerEl.textContent = 'Accepted. Tracking steps…';
+    /** Empty on purpose — status is in the step log only (avoids stale “Accepted…” copy). */
+    bannerEl.textContent = '';
     startPolling(requestId);
   } catch (err) {
     bannerEl.classList.add('error');
@@ -131,7 +136,7 @@ submitEl.addEventListener('click', async () => {
 });
 
 function startPolling(requestId) {
-  if (pollTimer) window.clearInterval(pollTimer);
+  stopPolling();
 
   void refreshOnce(requestId);
   pollTimer = window.setInterval(() => {
@@ -144,11 +149,20 @@ async function refreshOnce(requestId) {
   if (!res.ok) return;
   const body = await res.json();
   if (!body || typeof body !== 'object' || !Array.isArray(body.steps)) return;
-  renderSteps(body.steps);
+  renderSteps(body.steps, requestId);
+
+  if (body.finishedAt != null) {
+    stopPolling();
+  }
 }
 
-function renderSteps(steps) {
+function renderSteps(steps, requestId) {
   const frag = document.createDocumentFragment();
+
+  const rid = document.createElement('div');
+  rid.className = 'log-request-id mono subtle';
+  rid.textContent = `requestId: ${requestId}`;
+  frag.appendChild(rid);
 
   for (const step of steps) {
     if (!step || typeof step !== 'object') continue;
@@ -160,6 +174,9 @@ function renderSteps(steps) {
     const row = document.createElement('div');
     row.className = 'step';
     row.dataset.status = status;
+    if (kind === 'openai_process') {
+      row.classList.add('step--openai');
+    }
 
     const title = document.createElement('strong');
     title.textContent = `${prettyKind(kind)} · ${status}`;
@@ -170,6 +187,36 @@ function renderSteps(steps) {
 
     row.appendChild(title);
     row.appendChild(meta);
+
+    const ai = step.ai;
+    if (ai && typeof ai === 'object') {
+      const companion =
+        typeof ai.companionNote === 'string' ? ai.companionNote : '';
+      const cleaned = typeof ai.cleanedMessage === 'string' ? ai.cleanedMessage : '';
+      const mood = typeof ai.interpretedMood === 'string' ? ai.interpretedMood : '';
+      if (companion || cleaned || mood) {
+        const preview = document.createElement('div');
+        preview.className = 'ai-preview';
+        const label = document.createElement('span');
+        label.className = 'ai-preview-label';
+        label.textContent = 'OpenAI response';
+        const text = document.createElement('p');
+        text.className = 'ai-preview-text';
+        text.textContent = companion || cleaned;
+        const refined = document.createElement('p');
+        refined.className = 'ai-preview-refined';
+        refined.textContent = cleaned && companion ? `Versión clara: ${cleaned}` : '';
+        const sub = document.createElement('p');
+        sub.className = 'ai-preview-mood';
+        sub.textContent = mood ? `Tono: ${mood}` : '';
+        preview.appendChild(label);
+        preview.appendChild(text);
+        if (refined.textContent) preview.appendChild(refined);
+        preview.appendChild(sub);
+        row.appendChild(preview);
+      }
+    }
+
     frag.appendChild(row);
   }
 

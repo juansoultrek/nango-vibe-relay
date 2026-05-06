@@ -1,3 +1,4 @@
+import { resolveMoodEmojiInput } from '../emojiRegistry';
 import type { LogStep, PipelineStepKind, StepStatus } from '../types';
 
 export type LogStoreSnapshot = {
@@ -32,16 +33,19 @@ export class LogStore {
     return { ok: true };
   }
 
-  validateEmoji(emoji: string): { ok: true } | { ok: false; error: string } {
+  validateEmoji(emoji: string): { ok: true; emojiId: string } | { ok: false; error: string } {
     const trimmed = emoji.trim();
     if (!trimmed) {
       return { ok: false, error: 'Choose a mood emoji (tap a face).' };
     }
-    const glyphs = [...trimmed];
-    if (glyphs.length > 8) {
-      return { ok: false, error: 'Pick a single face emoji.' };
+    const emojiId = resolveMoodEmojiInput(trimmed);
+    if (!emojiId) {
+      return {
+        ok: false,
+        error: 'Pick a face from the grid (unknown mood id or emoji).',
+      };
     }
-    return { ok: true };
+    return { ok: true, emojiId };
   }
 
   createRequest(requestId: string): void {
