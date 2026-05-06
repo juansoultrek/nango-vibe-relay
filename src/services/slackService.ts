@@ -11,7 +11,8 @@ export async function postSlackSummary(text: string): Promise<{ ok: true } | { o
     return { ok: false, detail: 'SLACK_CHANNEL_ID is not set' };
   }
 
-  const providerPath = 'api/chat.postMessage';
+  /** Slack Web API URL is slack.com/api/METHOD — Nango’s Slack base already includes `/api/`, so no `api/` prefix here. */
+  const providerPath = 'chat.postMessage';
   const res = await nangoProxyFetch(env.env, providerPath, {
     method: 'POST',
     headers: {
