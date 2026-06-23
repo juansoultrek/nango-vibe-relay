@@ -40,7 +40,7 @@ jobs:
         run: tar -czf deploy-bundle.tar.gz dist public package.json package-lock.json server.js node_modules
 
       - name: Upload bundle via SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.DEPLOY_SSH_HOST }}
           username: ${{ secrets.DEPLOY_SSH_USERNAME }}
