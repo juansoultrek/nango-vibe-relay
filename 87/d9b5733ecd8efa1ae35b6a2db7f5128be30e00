@@ -1,0 +1,19 @@
+README.md
+  s_281e1a480b37e7::t_fb7efc44c5f754 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "87d9b5733ecd8efa1ae35b6a2db7f5128be30e00",
+  "prompts": {},
+  "sessions": {
+    "s_281e1a480b37e7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "83efdfa7-ed9f-4e5e-ba77-fa6fc7c26656",
+        "model": "grok-4.5"
+      },
+      "human_author": "Juan Carlos Villegas <juancarlos.villegas@gmail.com>"
+    }
+  }
+}
