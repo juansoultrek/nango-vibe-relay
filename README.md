@@ -1,6 +1,6 @@
 # Nango Vibe Relay
 
-Demo in Node.js + TypeScript: you send a short message and a mood, OpenAI rewrites it, and Nango can optionally send the result to Google Sheets and/or Slack. The browser shows a step-by-step log of what happened.
+Demo that takes a message and a mood, processes it with OpenAI, and optionally relays it with Nango. It writes to Google Sheets and sends a Slack message.
 
 ---
 
