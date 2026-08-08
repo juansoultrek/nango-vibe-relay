@@ -1,6 +1,6 @@
 # Nango Vibe Relay
 
-Node.js + TypeScript demo: a short message plus a **mood picker id** → **OpenAI** (JSON mood label + paraphrase + note) → optional **Nango** proxy → **Google Sheets** and/or **Slack**, with a polled step log in the browser.
+Demo in Node.js + TypeScript: you send a short message and a mood, OpenAI rewrites it, and Nango can optionally send the result to Google Sheets and/or Slack. The browser shows a step-by-step log of what happened.
 
 ---
 
