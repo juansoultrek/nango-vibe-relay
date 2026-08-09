@@ -196,7 +196,9 @@ Picker ids and English-only model fields are enforced in **`src/services/aiServi
 
 ## Deploy (GitHub Actions)
 
-Push to **`main`** runs [`.github/workflows/deploy-ssh.yml`](.github/workflows/deploy-ssh.yml): **`npm ci`** + **`npm run build`** on Ubuntu, then **`npm ci --omit=dev`** so **`node_modules`** contains only runtime dependencies (currently **express**). That tree is packed into an archive and extracted on your server (**no remote `npm install`** unless you change the workflow).
+> **Author deploy only.** [`.github/workflows/deploy-ssh.yml`](.github/workflows/deploy-ssh.yml) is wired for the author’s SSH/cPanel host. If you clone this repo to run it locally, **ignore or delete** `.github/workflows/` — you do not need it. Without the author’s secrets, Actions will **not** deploy to their server.
+
+Push to **`main`** runs that workflow: **`npm ci`** + **`npm run build`** on Ubuntu, then **`npm ci --omit=dev`** so **`node_modules`** contains only runtime dependencies (currently **express**). That tree is packed into an archive and extracted on your server (**no remote `npm install`** unless you change the workflow).
 
 If you ship native/binary dependencies later, revise the workflow or install on the host manually.
 
